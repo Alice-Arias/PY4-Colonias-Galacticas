@@ -1,0 +1,66 @@
+{
+    "nombre": "Nebulosa Orion",
+    "cicloProduccionSegundos": 20,
+    "tipos": {
+        "minero": {
+            "minerales": 100,
+            "energia": 30,
+            "cristales": 10
+        },
+        "energetico": {
+            "minerales": 50,
+            "energia": 50,
+            "cristales": 10
+        },
+        "cientifico": {
+            "minerales": 40,
+            "energia": 40,
+            "cristales": 30
+        },
+        "balanceado": {
+            "minerales": 35,
+            "energia": 35,
+            "cristales": 35
+        }
+    },
+    "sistemas": [
+        { "id": "S1", "nombre": "Terra", "descripcion": "Sistema equilibrado y punto de inicio.", "tipo": "balanceado" },
+        { "id": "S2", "nombre": "Nova", "descripcion": "Sistema rico en minerales.", "tipo": "minero" },
+        { "id": "S3", "nombre": "Atlas", "descripcion": "Zona de alta generación de energía.", "tipo": "energetico" },
+        { "id": "S4", "nombre": "Vega", "descripcion": "Centro de investigación y análisis.", "tipo": "cientifico" },
+        { "id": "S5", "nombre": "Helios", "descripcion": "Mundo industrial con gran extracción.", "tipo": "minero" },
+        { "id": "S6", "nombre": "Titan", "descripcion": "Sistema robusto para sostener flotas.", "tipo": "energetico" },
+        { "id": "S7", "nombre": "Draco", "descripcion": "Nodo técnico con enfoque científico.", "tipo": "cientifico" },
+        { "id": "S8", "nombre": "Luna", "descripcion": "Sistema versátil de apoyo estratégico.", "tipo": "balanceado" },
+        { "id": "S9", "nombre": "Ares", "descripcion": "Zona minera de expansión rápida.", "tipo": "minero" },
+        { "id": "S10", "nombre": "Nexus", "descripcion": "Centro energético de alto rendimiento.", "tipo": "energetico" },
+        { "id": "S11", "nombre": "Argos", "descripcion": "Puesto de observación y ciencia.", "tipo": "cientifico" },
+        { "id": "S12", "nombre": "Lyra", "descripcion": "Sistema adaptable para cualquier rol.", "tipo": "balanceado" },
+        { "id": "S13", "nombre": "Orion", "descripcion": "Nodo minero con acceso a rutas clave.", "tipo": "minero" },
+        { "id": "S14", "nombre": "Phoenix", "descripcion": "Reserva energética de alto valor.", "tipo": "energetico" },
+        { "id": "S15", "nombre": "Hydra", "descripcion": "Laboratorio natural para avances.", "tipo": "cientifico" },
+        { "id": "S16", "nombre": "Zenith", "descripcion": "Sistema equilibrado para control medio.", "tipo": "balanceado" },
+        { "id": "S17", "nombre": "Gaia", "descripcion": "Mundo fértil en recursos minerales.", "tipo": "minero" },
+        { "id": "S18", "nombre": "Erebus", "descripcion": "Fuente de energía estable.", "tipo": "energetico" },
+        { "id": "S19", "nombre": "Chronos", "descripcion": "Punto de estudio de tecnología avanzada.", "tipo": "cientifico" },
+        { "id": "S20", "nombre": "Sigma", "descripcion": "Sistema balanceado de apoyo logístico.", "tipo": "balanceado" },
+        { "id": "S21", "nombre": "Omega", "descripcion": "Último nodo minero del corredor exterior.", "tipo": "minero" },
+        { "id": "S22", "nombre": "Aurora", "descripcion": "Nodo energético de expansión rápida.", "tipo": "energetico" },
+        { "id": "S23", "nombre": "Polaris", "descripcion": "Observatorio científico de frontera.", "tipo": "cientifico" },
+        { "id": "S24", "nombre": "Nebula", "descripcion": "Sistema equilibrado de enlace.", "tipo": "balanceado" },
+        { "id": "S25", "nombre": "Andromeda", "descripcion": "Mundo minero de cierre del anillo.", "tipo": "minero" }
+    ],
+    "rutas": [
+        ["S1", "S2"], ["S2", "S3"], ["S3", "S4"], ["S4", "S5"],
+        ["S5", "S6"], ["S6", "S7"], ["S7", "S8"], ["S8", "S9"],
+        ["S9", "S10"], ["S10", "S11"], ["S11", "S12"], ["S12", "S13"],
+        ["S13", "S14"], ["S14", "S15"], ["S15", "S16"], ["S16", "S17"],
+        ["S17", "S18"], ["S18", "S19"], ["S19", "S20"], ["S20", "S21"],
+        ["S21", "S22"], ["S22", "S23"], ["S23", "S24"], ["S24", "S25"],
+        ["S25", "S1"], ["S1", "S6"], ["S2", "S7"], ["S3", "S8"],
+        ["S4", "S9"], ["S5", "S10"], ["S6", "S11"], ["S7", "S12"],
+        ["S8", "S13"], ["S9", "S14"], ["S10", "S15"], ["S11", "S16"],
+        ["S12", "S17"], ["S13", "S18"], ["S14", "S19"], ["S15", "S20"],
+        ["S16", "S21"], ["S17", "S22"]
+    ]
+}

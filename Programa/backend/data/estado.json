@@ -1,0 +1,255 @@
+{
+  "nombre": "Nebulosa Orion",
+  "sistemas": [
+    {
+      "id": "S1",
+      "nombre": "Terra",
+      "estadoExploracion": "no explorado",
+      "dueno": null,
+      "nivel": 1,
+      "defensa": 100,
+      "flotasEstacionadas": 0,
+      "instalaciones": []
+    },
+    {
+      "id": "S2",
+      "nombre": "Nova",
+      "estadoExploracion": "no explorado",
+      "dueno": null,
+      "nivel": 1,
+      "defensa": 100,
+      "flotasEstacionadas": 0,
+      "instalaciones": []
+    },
+    {
+      "id": "S3",
+      "nombre": "Atlas",
+      "estadoExploracion": "no explorado",
+      "dueno": null,
+      "nivel": 1,
+      "defensa": 100,
+      "flotasEstacionadas": 0,
+      "instalaciones": []
+    },
+    {
+      "id": "S4",
+      "nombre": "Vega",
+      "estadoExploracion": "no explorado",
+      "dueno": null,
+      "nivel": 1,
+      "defensa": 100,
+      "flotasEstacionadas": 0,
+      "instalaciones": []
+    },
+    {
+      "id": "S5",
+      "nombre": "Helios",
+      "estadoExploracion": "no explorado",
+      "dueno": null,
+      "nivel": 1,
+      "defensa": 100,
+      "flotasEstacionadas": 0,
+      "instalaciones": []
+    },
+    {
+      "id": "S6",
+      "nombre": "Titan",
+      "estadoExploracion": "no explorado",
+      "dueno": null,
+      "nivel": 1,
+      "defensa": 100,
+      "flotasEstacionadas": 0,
+      "instalaciones": []
+    },
+    {
+      "id": "S7",
+      "nombre": "Draco",
+      "estadoExploracion": "no explorado",
+      "dueno": null,
+      "nivel": 1,
+      "defensa": 100,
+      "flotasEstacionadas": 0,
+      "instalaciones": []
+    },
+    {
+      "id": "S8",
+      "nombre": "Luna",
+      "estadoExploracion": "no explorado",
+      "dueno": null,
+      "nivel": 1,
+      "defensa": 100,
+      "flotasEstacionadas": 0,
+      "instalaciones": []
+    },
+    {
+      "id": "S9",
+      "nombre": "Ares",
+      "estadoExploracion": "no explorado",
+      "dueno": null,
+      "nivel": 1,
+      "defensa": 100,
+      "flotasEstacionadas": 0,
+      "instalaciones": []
+    },
+    {
+      "id": "S10",
+      "nombre": "Nexus",
+      "estadoExploracion": "no explorado",
+      "dueno": null,
+      "nivel": 1,
+      "defensa": 100,
+      "flotasEstacionadas": 0,
+      "instalaciones": []
+    },
+    {
+      "id": "S11",
+      "nombre": "Argos",
+      "estadoExploracion": "no explorado",
+      "dueno": null,
+      "nivel": 1,
+      "defensa": 100,
+      "flotasEstacionadas": 0,
+      "instalaciones": []
+    },
+    {
+      "id": "S12",
+      "nombre": "Lyra",
+      "estadoExploracion": "no explorado",
+      "dueno": null,
+      "nivel": 1,
+      "defensa": 100,
+      "flotasEstacionadas": 0,
+      "instalaciones": []
+    },
+    {
+      "id": "S13",
+      "nombre": "Orion",
+      "estadoExploracion": "no explorado",
+      "dueno": null,
+      "nivel": 1,
+      "defensa": 100,
+      "flotasEstacionadas": 0,
+      "instalaciones": []
+    },
+    {
+      "id": "S14",
+      "nombre": "Phoenix",
+      "estadoExploracion": "no explorado",
+      "dueno": null,
+      "nivel": 1,
+      "defensa": 100,
+      "flotasEstacionadas": 0,
+      "instalaciones": []
+    },
+    {
+      "id": "S15",
+      "nombre": "Hydra",
+      "estadoExploracion": "no explorado",
+      "dueno": null,
+      "nivel": 1,
+      "defensa": 100,
+      "flotasEstacionadas": 0,
+      "instalaciones": []
+    },
+    {
+      "id": "S16",
+      "nombre": "Zenith",
+      "estadoExploracion": "no explorado",
+      "dueno": null,
+      "nivel": 1,
+      "defensa": 100,
+      "flotasEstacionadas": 0,
+      "instalaciones": []
+    },
+    {
+      "id": "S17",
+      "nombre": "Gaia",
+      "estadoExploracion": "no explorado",
+      "dueno": null,
+      "nivel": 1,
+      "defensa": 100,
+      "flotasEstacionadas": 0,
+      "instalaciones": []
+    },
+    {
+      "id": "S18",
+      "nombre": "Erebus",
+      "estadoExploracion": "no explorado",
+      "dueno": null,
+      "nivel": 1,
+      "defensa": 100,
+      "flotasEstacionadas": 0,
+      "instalaciones": []
+    },
+    {
+      "id": "S19",
+      "nombre": "Chronos",
+      "estadoExploracion": "no explorado",
+      "dueno": null,
+      "nivel": 1,
+      "defensa": 100,
+      "flotasEstacionadas": 0,
+      "instalaciones": []
+    },
+    {
+      "id": "S20",
+      "nombre": "Sigma",
+      "estadoExploracion": "no explorado",
+      "dueno": null,
+      "nivel": 1,
+      "defensa": 100,
+      "flotasEstacionadas": 0,
+      "instalaciones": []
+    },
+    {
+      "id": "S21",
+      "nombre": "Omega",
+      "estadoExploracion": "no explorado",
+      "dueno": null,
+      "nivel": 1,
+      "defensa": 100,
+      "flotasEstacionadas": 0,
+      "instalaciones": []
+    },
+    {
+      "id": "S22",
+      "nombre": "Aurora",
+      "estadoExploracion": "no explorado",
+      "dueno": null,
+      "nivel": 1,
+      "defensa": 100,
+      "flotasEstacionadas": 0,
+      "instalaciones": []
+    },
+    {
+      "id": "S23",
+      "nombre": "Polaris",
+      "estadoExploracion": "no explorado",
+      "dueno": null,
+      "nivel": 1,
+      "defensa": 100,
+      "flotasEstacionadas": 0,
+      "instalaciones": []
+    },
+    {
+      "id": "S24",
+      "nombre": "Nebula",
+      "estadoExploracion": "no explorado",
+      "dueno": null,
+      "nivel": 1,
+      "defensa": 100,
+      "flotasEstacionadas": 0,
+      "instalaciones": []
+    },
+    {
+      "id": "S25",
+      "nombre": "Andromeda",
+      "estadoExploracion": "no explorado",
+      "dueno": null,
+      "nivel": 1,
+      "defensa": 100,
+      "flotasEstacionadas": 0,
+      "instalaciones": []
+    }
+  ]
+}
