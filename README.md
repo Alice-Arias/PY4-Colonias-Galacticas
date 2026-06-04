@@ -6,7 +6,7 @@
 ![Instituto](https://img.shields.io/badge/Instituto-Tec%20Costa%20Rica-blue)
 ![Curso](https://img.shields.io/badge/Curso-Lenguajes%20de%20Programaci%C3%B3n-lightgrey)
 ![Semestre](https://img.shields.io/badge/Semestre-I%20Semestre%202026-green)
-![Estado](https://img.shields.io/badge/Estado-Draft-orange)
+![Estado](https://img.shields.io/badge/Estado-Proceso-orange)
 
 </div>
 
