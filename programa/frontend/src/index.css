@@ -1,111 +1,102 @@
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
+  /* ===== PALETA PRINCIPAL ===== */
+
+  /* Tecnología, interfaz, elementos principales */
+  --color-primary: #1b88a2;
+  --color-primary-light: #41b7be;
+
+  /* Resaltados futuristas */
+  --color-accent: #74eadc;
+  --color-accent-light: #a8f5eb;
+
+  /* Recursos, botones importantes */
+  --color-secondary: #a28c1c;
+  --color-secondary-light: #e0d667;
+
+  /* Elementos militares/coloniales */
+  --color-tertiary: #2a402d;
+  --color-tertiary-light: #9db578;
+
+  /* Variantes informativas */
+  --color-info: #3e8e99;
+  --color-info-light: #41b7be;
+
+  /* ===== INTERFAZ ===== */
+
+  --bg: #eef7f8;
+  --bg-secondary: #ffffff;
+
+  --text: #173840;
+  --text-light: #53717a;
+  --text-inverse: #ffffff;
+
+  --border: #cfe4e8;
+
+  /* ===== ESTADOS ===== */
+
+  --success: #9db578;
+  --warning: #e0d667;
+  --highlight: #74eadc;
+
+  /* ===== EFECTOS ===== */
+
   --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+    rgba(0, 0, 0, 0.12) 0 10px 15px -3px,
+    rgba(0, 0, 0, 0.08) 0 4px 6px -2px;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  /* ===== TIPOGRAFÍA ===== */
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+  --sans: "Segoe UI", Roboto, sans-serif;
+  --heading: "Segoe UI", Roboto, sans-serif;
+  --mono: Consolas, monospace;
 }
+
+/* ===== MODO OSCURO ===== */
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
+    --bg: #111b13;
+    --bg-secondary: #1b2b1e;
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
+    --text: #e8efe3;
+    --text-light: #b6c3b2;
+    --text-inverse: #ffffff;
+
+    --border: #314936;
+
+    --shadow:
+      rgba(0, 0, 0, 0.45) 0 10px 15px -3px,
+      rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
   }
+}
+
+/* ===== RESET GENERAL ===== */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
 }
 
 #root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
+  min-height: 100vh;
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+a {
+  text-decoration: none;
+  color: inherit;
 }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+button,
+input,
+textarea,
+select {
+  font: inherit;
 }
