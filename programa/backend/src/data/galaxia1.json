@@ -1,0 +1,27 @@
+{
+    "sistemas": [
+        {
+            "nombre": "Alpha Prime",
+            "descripcion": "Centro industrial",
+            "tipo": "MINERO",
+            "minerales": 100,
+            "energia": 20,
+            "cristales": 10
+        },
+        {
+            "nombre": "Nova VII",
+            "descripcion": "Generador energético",
+            "tipo": "ENERGETICO",
+            "minerales": 20,
+            "energia": 100,
+            "cristales": 15
+        }
+    ],
+
+    "rutas": [
+        {
+            "origen": "Alpha Prime",
+            "destino": "Nova VII"
+        }
+    ]
+}
