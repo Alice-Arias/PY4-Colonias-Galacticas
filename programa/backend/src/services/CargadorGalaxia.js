@@ -14,14 +14,7 @@ class CargadorGalaxia {
 
         data.sistemas.forEach((sistema) => {
             universo.agregarSistema(
-                new SistemaPlanetario(
-                    sistema.nombre,
-                    sistema.descripcion,
-                    sistema.tipo,
-                    sistema.minerales,
-                    sistema.energia,
-                    sistema.cristales,
-                ),
+                new SistemaPlanetario(sistema.nombre,sistema.descripcion,sistema.tipo,sistema.minerales,sistema.energia,sistema.cristales,),
             );
         });
 

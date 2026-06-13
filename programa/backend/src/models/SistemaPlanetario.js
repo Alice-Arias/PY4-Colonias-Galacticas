@@ -3,19 +3,14 @@ class SistemaPlanetario {
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.tipo = tipo;
-
         this.produccion = {
             minerales,
             energia,
             cristales,
         };
-
         this.propietario = null;
-
         this.flotas = [];
-
         this.instalaciones = [];
-
         this.estadoExploracion = "NO_EXPLORADO";
     }
 }
