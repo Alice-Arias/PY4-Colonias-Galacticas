@@ -1,9 +1,0 @@
-Curso: Lenguajes de Programación (IC-4700)
-Semestre: I, 2026
-Nombre(s) de los estudiantes:
-Carnet(s):
-Número del proyecto: Proyecto Programado #4
-Fecha de entrega:
-Estatus de la entrega: [Deplorable|Regular|Buena|MuyBuena|Excelente|Superior]
-Repositorio/GitHub (URL):
-Notas adicionales:
