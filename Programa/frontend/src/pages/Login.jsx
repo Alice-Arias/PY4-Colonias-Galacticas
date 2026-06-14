@@ -94,10 +94,7 @@ function Login() {
                         maxLength={20}
                     />
 
-                    <button
-                        className="login-primary-btn"
-                        onClick={crearPartida}
-                    >
+                    <button className="login-primary-btn" onClick={crearPartida}>
                         Crear partida
                     </button>
 
