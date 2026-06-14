@@ -1,0 +1,519 @@
+.unirse-page {
+    height: 100vh;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    overflow: hidden;
+    font-family: 'Rajdhani', sans-serif;
+    animation: login-kb 18s ease-in-out infinite alternate;
+}
+
+@keyframes login-kb {
+    from { background-size: 100%; background-position: 40% 50%; }
+    to   { background-size: 112%; background-position: 60% 45%; }
+}
+
+.unirse-bg-fx {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.unirse-bg-fx::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+        ellipse at 50% 50%,
+        transparent 40%,
+        rgba(1, 4, 16, 0.55) 100%
+    );
+    animation: vignette-pulse 5s ease-in-out infinite alternate;
+}
+
+@keyframes vignette-pulse {
+    from { opacity: 0.7; }
+    to   { opacity: 1; }
+}
+
+.unirse-bg-fx::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 180px 120px at 85% 18%, rgba(255, 140, 20, 0.18) 0%, transparent 70%),
+        radial-gradient(ellipse 120px 80px  at 12% 75%, rgba(0, 180, 255, 0.12) 0%, transparent 70%);
+    animation: combat-flicker 7s ease-in-out infinite alternate;
+}
+
+@keyframes combat-flicker {
+    0%   { opacity: 0.6; transform: scale(1); }
+    30%  { opacity: 1;   transform: scale(1.04); }
+    55%  { opacity: 0.7; transform: scale(0.98); }
+    80%  { opacity: 1;   transform: scale(1.06); }
+    100% { opacity: 0.65; transform: scale(1); }
+}
+
+.unirse-bg-fx .warp-line {
+    position: absolute;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(160, 220, 255, 0.55), transparent);
+    border-radius: 50%;
+    animation: warp-streak var(--dur, 4s) linear infinite;
+    animation-delay: var(--delay, 0s);
+    opacity: 0;
+}
+
+@keyframes warp-streak {
+    0%   { opacity: 0; transform: translateX(-100%) scaleX(0.3); }
+    10%  { opacity: 1; }
+    85%  { opacity: 0.8; }
+    100% { opacity: 0; transform: translateX(110vw) scaleX(1); }
+}
+
+.unirse-page::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(0, 200, 255, 0.018) 3px,
+        rgba(0, 200, 255, 0.018) 4px
+    );
+    pointer-events: none;
+    z-index: 1;
+}
+
+.unirse-overlay {
+    position: relative;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(2, 8, 20, 0.60);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    z-index: 2;
+    padding: 0.2rem 1rem;
+    overflow: hidden;
+}
+
+/* Layout 2 columnas */
+.unirse-layout {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 1.2rem;
+    width: min(860px, 96vw);
+    align-items: stretch;
+}
+
+/* Card compartida */
+.unirse-card,
+.unirse-players-panel {
+    height: 100%;
+    background: rgba(3, 14, 32, 0.92);
+    border: 1px solid rgba(0, 210, 255, 0.38);
+    border-radius: 12px;
+    padding: 1.8rem;
+    position: relative;
+    box-shadow:
+        0 0 40px rgba(0, 180, 255, 0.08),
+        inset 0 0 30px rgba(0, 50, 120, 0.15);
+    overflow: hidden;
+}
+
+.unirse-players-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding-right: 4px;
+
+    /* Scrollbar estilizada */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 212, 255, 0.25) transparent;
+}
+
+.unirse-players-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.unirse-players-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.unirse-players-list::-webkit-scrollbar-thumb {
+    background: rgba(0, 212, 255, 0.25);
+    border-radius: 2px;
+}
+
+.unirse-players-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 212, 255, 0.45);
+}
+
+.unirse-card::before,
+.unirse-players-panel::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 13px;
+    background: linear-gradient(
+        135deg,
+        rgba(0, 210, 255, 0.28)  0%,
+        transparent              38%,
+        transparent              62%,
+        rgba(235, 185, 50, 0.18) 100%
+    );
+    z-index: -1;
+}
+
+.unirse-card::after,
+.unirse-players-panel::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 45%; height: 1px;
+    background: linear-gradient(90deg, transparent, #00d4ff, transparent);
+    box-shadow: 0 0 8px rgba(0, 212, 255, 0.6);
+}
+
+/* Header */
+.unirse-header {
+    text-align: center;
+    margin-bottom: 1.4rem;
+    padding-bottom: 0.9rem;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.14);
+}
+
+.unirse-eyebrow {
+    display: block;
+    font-family: 'Orbitron', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.22em;
+    color: #e8b832;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.unirse-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    text-shadow:
+        0 0 18px rgba(0, 212, 255, 0.45),
+        0 0 40px rgba(0, 100, 200, 0.30);
+    margin: 0;
+}
+
+/* Section label */
+.unirse-section-label {
+    font-size: 0.66rem;
+    letter-spacing: 0.2em;
+    color: rgba(0, 212, 255, 0.55);
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 0.55rem;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.unirse-section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(0, 212, 255, 0.15);
+}
+
+/* Form */
+.unirse-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 0.7rem;
+}
+
+.unirse-form-group label {
+    font-size: 0.72rem;
+    letter-spacing: 0.09em;
+    color: rgba(160, 205, 235, 0.60);
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.unirse-field {
+    width: 100%;
+    padding: 0.58rem 0.78rem;
+    background: rgba(0, 18, 45, 0.82);
+    border: 1px solid rgba(0, 210, 255, 0.28);
+    border-radius: 6px;
+    color: #c5e8ff;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    outline: none;
+    box-sizing: border-box;
+    transition:
+        border-color 0.2s ease,
+        box-shadow   0.2s ease,
+        background   0.2s ease;
+}
+
+.unirse-field::placeholder {
+    color: rgba(100, 160, 205, 0.42);
+    font-style: italic;
+    font-size: 0.84rem;
+}
+
+.unirse-field:focus {
+    border-color: #00d4ff;
+    background: rgba(0, 22, 55, 0.92);
+    box-shadow:
+        0 0 0 2px rgba(0, 212, 255, 0.13),
+        inset 0 0 10px rgba(0, 212, 255, 0.05);
+}
+
+/* Botón */
+.unirse-btn-primary {
+    width: 100%;
+    padding: 0.78rem 1rem;
+    margin-top: 0.4rem;
+    background: linear-gradient(
+        135deg,
+        rgba(0, 95, 175, 0.55) 0%,
+        rgba(0, 55, 115, 0.75) 100%
+    );
+    border: 1px solid #00d4ff;
+    border-radius: 6px;
+    color: #ffffff;
+    font-family: 'Orbitron', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition:
+        box-shadow 0.2s ease,
+        transform  0.15s ease;
+}
+
+.unirse-btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.14), transparent);
+    transition: left 0.42s ease;
+}
+
+.unirse-btn-primary:hover::before { left: 100%; }
+
+.unirse-btn-primary:hover {
+    box-shadow:
+        0 0 22px rgba(0, 212, 255, 0.45),
+        0 0 44px rgba(0, 150, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+.unirse-btn-primary:active { transform: translateY(0); }
+
+.unirse-btn-back {
+    width: 100%;
+    padding: 0.65rem 1rem;
+    margin-top: 0.4rem;
+    background: transparent;
+    border: 1px solid rgba(232, 184, 50, 0.35);
+    border-radius: 6px;
+    color: #e8b832;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.84rem;
+    font-weight: 600;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition:
+        background    0.2s ease,
+        box-shadow    0.2s ease,
+        border-color  0.2s ease;
+}
+
+.unirse-btn-back:hover {
+    background: rgba(232, 184, 50, 0.09);
+    border-color: rgba(232, 184, 50, 0.65);
+    box-shadow: 0 0 14px rgba(232, 184, 50, 0.22);
+}
+
+/* Panel jugadores */
+.unirse-players-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-height: 260px;
+}
+
+.unirse-players-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.2rem;
+}
+
+.unirse-players-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.unirse-players-count {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.7rem;
+    color: #00d4ff;
+    background: rgba(0, 212, 255, 0.08);
+    border: 1px solid rgba(0, 212, 255, 0.25);
+    border-radius: 20px;
+    padding: 2px 10px;
+    letter-spacing: 0.1em;
+}
+
+/* Fila jugador */
+.unirse-player-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.55rem 0.75rem;
+    background: rgba(0, 18, 45, 0.55);
+    border: 1px solid rgba(0, 210, 255, 0.12);
+    border-radius: 6px;
+    transition: border-color 0.2s ease;
+}
+
+.unirse-player-row:hover {
+    border-color: rgba(0, 210, 255, 0.28);
+}
+
+.unirse-player-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Orbitron', monospace;
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: #00d4ff;
+    flex-shrink: 0;
+    text-transform: uppercase;
+}
+
+.unirse-player-name {
+    flex: 1;
+    color: #c5e8ff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+.unirse-player-status {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 10px;
+    border-radius: 20px;
+}
+
+.unirse-status-ready {
+    color: #3dffa0;
+    background: rgba(61, 255, 160, 0.08);
+    border: 1px solid rgba(61, 255, 160, 0.25);
+}
+
+.unirse-status-waiting {
+    color: #e8b832;
+    background: rgba(232, 184, 50, 0.08);
+    border: 1px solid rgba(232, 184, 50, 0.25);
+}
+
+/* Empty state */
+.unirse-empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: rgba(100, 160, 205, 0.35);
+    padding: 1.5rem 0;
+}
+
+.unirse-empty-icon {
+    font-size: 1.8rem;
+}
+
+.unirse-empty-state p {
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+}
+
+/* Barra de estado */
+.unirse-estado-bar {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.5rem 0.75rem;
+    background: rgba(0, 18, 45, 0.4);
+    border: 1px solid rgba(0, 212, 255, 0.1);
+    border-radius: 6px;
+}
+
+.unirse-estado-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #e8b832;
+    box-shadow: 0 0 6px rgba(232, 184, 50, 0.7);
+    animation: pulse-dot 1.5s ease-in-out infinite alternate;
+    flex-shrink: 0;
+}
+
+@keyframes pulse-dot {
+    from { opacity: 0.5; transform: scale(0.85); }
+    to   { opacity: 1;   transform: scale(1.15); }
+}
+
+.unirse-estado-text {
+    font-size: 0.78rem;
+    color: rgba(160, 205, 235, 0.65);
+    letter-spacing: 0.08em;
+}
+
+.unirse-estado-text strong {
+    color: #e8b832;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+@media (max-width: 640px) {
+    .unirse-layout { grid-template-columns: 1fr; }
+    .unirse-card, .unirse-players-panel { padding: 1.4rem 1.2rem; }
+}
