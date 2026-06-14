@@ -1,77 +1,116 @@
+import "../styles/Login.css";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import backgroundLogin from "../assets/backgroundLogin.jpeg";
 
-// ======================================================
-// NOMBRE: Login (Ingreso del jugador)
-// ENTRADA: nickname escrito por el usuario
-// SALIDA: almacenamiento en localStorage + redirección a Home
-// RESTRICCIONES:
-// - nickname obligatorio
-// - mínimo 4 caracteres
-// - máximo 20 caracteres
-// - requiere React Router configurado
-// OBJETIVO:
-// Registrar al jugador localmente antes de entrar al juego
-// ======================================================
-export default function Login() {
-  const [nickname, setNickname] = useState("");
-  const navigate = useNavigate();
+function Login() {
+    const fxRef = useRef(null);
+    const navigate = useNavigate();
 
-  // ======================================================
-  // NOMBRE: entrar al juego
-  // ENTRADA: nickname del input
-  // SALIDA: guarda nickname y navega a /home
-  // RESTRICCIONES:
-  // - no permite strings vacíos
-  // - valida longitud mínima y máxima
-  // OBJETIVO:
-  // Asegurar identidad básica del jugador antes de jugar
-  // ======================================================
-  const entrar = () => {
-    const limpio = nickname.trim();
+    const [nickname, setNickname] = useState("");
 
-    if (!limpio) {
-      alert("Ingrese un nickname");
-      return;
-    }
+    useEffect(() => {
+        const el = fxRef.current;
+        if (!el) return;
 
-    if (limpio.length < 4) {
-      alert("El nickname debe tener al menos 4 caracteres");
-      return;
-    }
+        for (let i = 0; i < 14; i++) {
+            const line = document.createElement("div");
+            line.className = "warp-line";
 
-    if (limpio.length > 20) {
-      alert("El nickname no puede tener más de 20 caracteres");
-      return;
-    }
+            const w = Math.random() * 120 + 40;
 
-    localStorage.setItem("nickname", limpio);
-    navigate("/home");
-  };
+            line.style.cssText = `
+                top: ${Math.random() * 100}%;
+                left: 0;
+                width: ${w}px;
+                --dur: ${(Math.random() * 5 + 3).toFixed(1)}s;
+                --delay: -${(Math.random() * 8).toFixed(1)}s;
+            `;
 
-  return (
-    <div>
-      {/* ======================================================
-          TÍTULO DEL JUEGO
-      ====================================================== */}
-      <h1>Colonias Galácticas</h1>
+            el.appendChild(line);
+        }
+    }, []);
 
-      {/* ======================================================
-          INPUT DE NICKNAME
-      ====================================================== */}
-      <input
-        type="text"
-        placeholder="Nickname"
-        value={nickname}
-        onChange={(e) => setNickname(e.target.value)}
-      />
+    const validarNickname = () => {
+        const limpio = nickname.trim();
 
-      {/* ======================================================
-          BOTÓN DE ENTRADA
-      ====================================================== */}
-      <button onClick={entrar}>
-        Entrar
-      </button>
-    </div>
-  );
+        if (!limpio) {
+            alert("Ingrese un nickname");
+            return null;
+        }
+
+        if (limpio.length < 4) {
+            alert("El nickname debe tener al menos 4 caracteres");
+            return null;
+        }
+
+        if (limpio.length > 20) {
+            alert("El nickname no puede tener más de 20 caracteres");
+            return null;
+        }
+
+        localStorage.setItem("nickname", limpio);
+        return limpio;
+    };
+
+    const manejarEnter = (e) => {
+        if (e.key === "Enter") {
+            crearPartida();
+        }
+    };
+
+    const crearPartida = () => {
+        if (!validarNickname()) return;
+        navigate("/crear");
+    };
+
+    const unirsePartida = () => {
+        if (!validarNickname()) return;
+        navigate("/unirse");
+    };
+
+    return (
+        <div
+            className="login"
+            style={{ backgroundImage: `url(${backgroundLogin})` }}
+        >
+            <div className="login-bg-fx" ref={fxRef}></div>
+
+            <div className="login-overlay">
+                <div className="login-card">
+                    <h1>Colonias Galácticas</h1>
+
+                    <p className="login-subtitle">
+                        Ingresa tu nombre para comenzar tu conquista espacial.
+                    </p>
+
+                    <input
+                        type="text"
+                        placeholder="Nombre de usuario"
+                        className="login-input"
+                        value={nickname}
+                        onChange={(e) => setNickname(e.target.value)}
+                        onKeyDown={manejarEnter}
+                        maxLength={20}
+                    />
+
+                    <button className="login-primary-btn" onClick={crearPartida}>
+                        Crear partida
+                    </button>
+
+                    <div className="login-buttons">
+                        <button onClick={unirsePartida}>
+                            Unirse a partida
+                        </button>
+
+                        <button onClick={() => navigate("/ranking")}>
+                            Ver rankings
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 }
+
+export default Login;
