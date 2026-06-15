@@ -1,13 +1,13 @@
 import "../styles/CrearPartida.css";
 import { useState, useEffect, useRef } from "react";
 import socket from "../services/socket";
+import api from "../services/api";
 import { useNavigate } from "react-router-dom";
 import backgroundLogin from "../assets/backgroundLogin.jpeg";
 
 import { SlEnergy } from "react-icons/sl";
 import { GiMinerals } from "react-icons/gi";
 import { GiMiner } from "react-icons/gi";
-import { RiArrowGoBackFill } from "react-icons/ri";
 
 const RECURSOS = {
     bajo: { minerales: 100, energia: 50, cristales: 20 },
@@ -15,12 +15,15 @@ const RECURSOS = {
     alto: { minerales: 500, energia: 250, cristales: 100 },
 };
 
+const getStoredNickname = () => sessionStorage.getItem("nickname") || localStorage.getItem("nickname") || "";
+
 export default function CrearPartida() {
     const navigate = useNavigate();
     const fxRef = useRef(null);
 
     const [nombre, setNombre] = useState("");
     const [galaxia, setGalaxia] = useState("Nebulosa Orion");
+    const [galaxias, setGalaxias] = useState([]);
     const [maxJugadores, setMaxJugadores] = useState(2);
     const [tiempoMax, setTiempoMax] = useState(300);
     const [tiempoEspera, setTiempoEspera] = useState(60);
@@ -44,7 +47,36 @@ export default function CrearPartida() {
         }
     }, []);
 
+    useEffect(() => {
+        let activo = true;
+
+        api.get("/galaxias")
+            .then((response) => {
+                if (!activo) return;
+
+                const lista = response.data?.galaxias || [];
+                setGalaxias(lista);
+
+                if (lista.length > 0) {
+                    setGalaxia((actual) =>
+                        lista.some((item) => item.nombre === actual)
+                            ? actual
+                            : lista[0].nombre,
+                    );
+                }
+            })
+            .catch(() => {
+                if (!activo) return;
+                setGalaxias([]);
+            });
+
+        return () => {
+            activo = false;
+        };
+    }, []);
+
     const crear = () => {
+        console.log("Botón pulsado");
         if (!nombre.trim()) {
             alert("Ingresa un nombre de partida");
             return;
@@ -53,6 +85,7 @@ export default function CrearPartida() {
         const config = {
             nombre,
             galaxia,
+            nickname: getStoredNickname(),
             maxJugadores: Number(maxJugadores),
             tiempoMax: Number(tiempoMax),
             tiempoEspera: Number(tiempoEspera),
@@ -62,12 +95,19 @@ export default function CrearPartida() {
                 alto: { minerales: 500, energia: 250, cristales: 100 },
             }[nivelRecursos],
         };
-
+        console.log("Enviando create_game");
+        console.log("Socket conectado:", socket.connected);
         socket.emit("create_game", config);
 
         socket.once("partida_creada", (partida) => {
-            alert("Partida creada: " + partida.id);
-            navigate("/unirse", { state: { partidaId: partida.id } });
+            sessionStorage.setItem("partidaId", partida.id);
+            localStorage.setItem("partidaId", partida.id);
+            navigate("/lobby", {
+                state: {
+                    partidaId: partida.id,
+                    isHost: true,
+                },
+            });
         });
     };
 
@@ -124,9 +164,11 @@ export default function CrearPartida() {
                                     value={galaxia}
                                     onChange={(e) => setGalaxia(e.target.value)}
                                 >
-                                    <option value="Nebulosa Orion">
-                                        Nebulosa Orion
-                                    </option>
+                                    {galaxias.map((item) => (
+                                        <option key={item.nombre} value={item.nombre}>
+                                            {item.nombre}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
                             <div className="crear-form-group">
@@ -255,7 +297,6 @@ export default function CrearPartida() {
                                     className="crear-btn-back"
                                     onClick={() => navigate("/")}
                                 >
-                                    <RiArrowGoBackFill className="back-icon" />{" "}
                                     Volver al inicio
                                 </button>
                             </div>

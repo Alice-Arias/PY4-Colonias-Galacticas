@@ -1,0 +1,164 @@
+.event-log {
+  background: linear-gradient(
+    180deg,
+    rgba(6, 18, 33, 0.95),
+    rgba(7, 18, 30, 0.95)
+  );
+  border: 1px solid rgba(66, 245, 155, 0.35);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  font-family: "Segoe UI", sans-serif;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.log-header {
+  padding: 12px 15px;
+  border-bottom: 1px solid rgba(66, 245, 155, 0.22);
+  background: rgba(17, 38, 64, 0.55);
+  border-radius: 12px 12px 0 0;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.log-header h3 {
+  margin: 0;
+  font-size: 13px;
+  color: #8fffd0;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+}
+
+.log-header-btn {
+  border: 1px solid rgba(131, 157, 206, 0.26);
+  background: rgba(9, 22, 38, 0.75);
+  color: #cfe0fb;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.log-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.log-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.log-content::-webkit-scrollbar-track {
+  background: rgba(0, 255, 136, 0.05);
+  border-radius: 3px;
+}
+
+.log-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 136, 0.3);
+  border-radius: 3px;
+}
+
+.log-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 136, 0.5);
+}
+
+.log-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #666;
+  font-size: 12px;
+  font-style: italic;
+}
+
+.log-empty p {
+  margin: 0;
+}
+
+.log-item {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(131, 157, 206, 0.14);
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+
+.log-item:hover {
+  background: rgba(66, 245, 155, 0.09);
+}
+
+.log-time {
+  color: #888;
+  font-weight: bold;
+  min-width: 45px;
+  font-family: "Courier New", monospace;
+  flex-shrink: 0;
+}
+
+.log-player {
+  font-weight: bold;
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.log-message {
+  color: #d5e2f6;
+  flex: 1;
+  word-wrap: break-word;
+}
+
+/* Estilos según tipo de evento */
+.log-conquest {
+  border-left: 2px solid #ff4444;
+  background: rgba(255, 68, 68, 0.05);
+}
+
+.log-build {
+  border-left: 2px solid #00ff88;
+  background: rgba(0, 255, 136, 0.05);
+}
+
+.log-fleet {
+  border-left: 2px solid #0066ff;
+  background: rgba(0, 102, 255, 0.05);
+}
+
+.log-battle {
+  border-left: 2px solid #ffaa00;
+  background: rgba(255, 170, 0, 0.05);
+}
+
+.log-eliminated {
+  border-left: 2px solid #ff0000;
+  background: rgba(255, 0, 0, 0.05);
+}
+
+@media (max-width: 768px) {
+  .log-item {
+    font-size: 10px;
+    gap: 6px;
+    padding: 5px 6px;
+  }
+
+  .log-time {
+    min-width: 40px;
+  }
+
+  .log-player {
+    min-width: 60px;
+  }
+}

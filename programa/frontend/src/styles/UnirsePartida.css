@@ -105,11 +105,12 @@
 
 /* Layout 2 columnas */
 .unirse-layout {
-    display: grid;
-    grid-template-columns: 360px 1fr;
+    display: flex;
     gap: 1.2rem;
-    width: min(860px, 96vw);
-    align-items: stretch;
+    width: 90vw;
+    max-width: 1000px;
+    align-items: flex-start;
+    justify-content: center;
 }
 
 /* Card compartida */
@@ -356,162 +357,246 @@
     box-shadow: 0 0 14px rgba(232, 184, 50, 0.22);
 }
 
-/* Panel jugadores */
-.unirse-players-panel {
+/* Lista de partidas */
+.unirse-games-list {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    min-height: 260px;
+    gap: 1rem;
+    max-height: 65vh;
+    overflow-y: auto;
+    padding-right: 8px;
 }
 
-.unirse-players-header {
+.unirse-games-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.unirse-games-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.unirse-games-list::-webkit-scrollbar-thumb {
+    background: rgba(0, 212, 255, 0.25);
+    border-radius: 3px;
+}
+
+.unirse-games-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 212, 255, 0.45);
+}
+
+.unirse-game-card {
+    background: rgba(0, 22, 55, 0.70);
+    border: 1px solid rgba(0, 180, 255, 0.35);
+    border-radius: 8px;
+    padding: 1.2rem;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.unirse-game-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(180deg, rgba(0, 212, 255, 0.45) 0%, transparent 100%);
+}
+
+.unirse-game-card:hover {
+    border-color: rgba(0, 212, 255, 0.65);
+    background: rgba(0, 28, 70, 0.85);
+    box-shadow:
+        0 0 15px rgba(0, 212, 255, 0.20),
+        inset 0 0 15px rgba(0, 212, 255, 0.08);
+    transform: translateX(4px);
+}
+
+.game-card-header {
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    margin-bottom: 0.2rem;
-}
-
-.unirse-players-title {
-    font-family: 'Orbitron', monospace;
-    font-size: 0.82rem;
-    font-weight: 700;
-    color: #ffffff;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-}
-
-.unirse-players-count {
-    font-family: 'Orbitron', monospace;
-    font-size: 0.7rem;
-    color: #00d4ff;
-    background: rgba(0, 212, 255, 0.08);
-    border: 1px solid rgba(0, 212, 255, 0.25);
-    border-radius: 20px;
-    padding: 2px 10px;
-    letter-spacing: 0.1em;
-}
-
-/* Fila jugador */
-.unirse-player-row {
-    display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.55rem 0.75rem;
-    background: rgba(0, 18, 45, 0.55);
-    border: 1px solid rgba(0, 210, 255, 0.12);
-    border-radius: 6px;
-    transition: border-color 0.2s ease;
+    margin-bottom: 0.8rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.15);
 }
 
-.unirse-player-row:hover {
-    border-color: rgba(0, 210, 255, 0.28);
-}
-
-.unirse-player-avatar {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: rgba(0, 212, 255, 0.1);
-    border: 1px solid rgba(0, 212, 255, 0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.game-card-name {
     font-family: 'Orbitron', monospace;
-    font-size: 0.6rem;
-    font-weight: 700;
-    color: #00d4ff;
-    flex-shrink: 0;
-    text-transform: uppercase;
-}
-
-.unirse-player-name {
-    flex: 1;
-    color: #c5e8ff;
-    font-size: 0.9rem;
+    font-size: 1rem;
     font-weight: 600;
+    color: #ffffff;
+    margin: 0;
     letter-spacing: 0.05em;
 }
 
-.unirse-player-status {
-    font-size: 0.68rem;
+.game-card-id {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.70rem;
+    color: rgba(0, 212, 255, 0.60);
     font-weight: 600;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
+    background: rgba(0, 212, 255, 0.08);
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 212, 255, 0.20);
+}
+
+.game-card-timer {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 1rem 0;
+    padding: 0.8rem;
+    background: rgba(0, 212, 255, 0.10);
+    border: 1px solid rgba(0, 212, 255, 0.25);
+    border-radius: 6px;
+}
+
+.timer-icon {
+    font-size: 1.2rem;
+    color: rgba(0, 212, 255, 0.80);
+}
+
+.timer-text {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #00ff00;
+    letter-spacing: 0.08em;
+    text-shadow: 0 0 10px rgba(0, 255, 0, 0.50);
+}
+
+.game-card-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.game-card-details p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: rgba(197, 232, 255, 0.75);
+    font-family: 'Rajdhani', sans-serif;
+}
+
+.game-card-details p strong {
+    color: rgba(0, 212, 255, 0.80);
+    font-weight: 600;
+}
+
+.unirse-btn-join {
+    width: 100%;
+    padding: 0.65rem 1rem;
+    background: linear-gradient(
+        135deg,
+        rgba(0, 95, 175, 0.60) 0%,
+        rgba(0, 55, 115, 0.80) 100%
+    );
+    border: 1px solid rgba(0, 212, 255, 0.45);
+    border-radius: 6px;
+    color: #ffffff;
+    font-family: 'Orbitron', monospace;
+    font-size: 0.70rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
-    padding: 2px 10px;
-    border-radius: 20px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition:
+        box-shadow 0.2s ease,
+        transform  0.15s ease,
+        border-color 0.2s ease,
+        background 0.2s ease;
 }
 
-.unirse-status-ready {
-    color: #3dffa0;
-    background: rgba(61, 255, 160, 0.08);
-    border: 1px solid rgba(61, 255, 160, 0.25);
+.unirse-btn-join::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.20), transparent);
+    transition: left 0.42s ease;
 }
 
-.unirse-status-waiting {
-    color: #e8b832;
+.unirse-btn-join:hover::before { left: 100%; }
+
+.unirse-btn-join:hover:not(.disabled) {
+    box-shadow:
+        0 0 20px rgba(0, 212, 255, 0.45),
+        0 0 40px rgba(0, 150, 255, 0.15);
+    border-color: rgba(0, 212, 255, 0.75);
+    transform: translateY(-1px);
+}
+
+.unirse-btn-join:active:not(.disabled) { transform: translateY(0); }
+
+.unirse-btn-join.disabled {
+    background: linear-gradient(
+        135deg,
+        rgba(100, 100, 100, 0.40) 0%,
+        rgba(80, 80, 80, 0.50) 100%
+    );
+    border-color: rgba(150, 150, 150, 0.30);
+    color: rgba(150, 150, 150, 0.60);
+    cursor: not-allowed;
+}
+
+/* Estados de carga y error */
+.unirse-loading,
+.unirse-error,
+.unirse-empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    text-align: center;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+
+.unirse-loading {
+    background: rgba(0, 212, 255, 0.08);
+    border: 1px solid rgba(0, 212, 255, 0.25);
+}
+
+.unirse-error {
+    background: rgba(255, 100, 100, 0.08);
+    border: 1px solid rgba(255, 100, 100, 0.25);
+}
+
+.unirse-empty {
     background: rgba(232, 184, 50, 0.08);
     border: 1px solid rgba(232, 184, 50, 0.25);
 }
 
-/* Empty state */
-.unirse-empty-state {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    color: rgba(100, 160, 205, 0.35);
-    padding: 1.5rem 0;
+.unirse-loading p,
+.unirse-error p,
+.unirse-empty p {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
 }
 
-.unirse-empty-icon {
-    font-size: 1.8rem;
+.unirse-loading p {
+    color: rgba(0, 212, 255, 0.70);
 }
 
-.unirse-empty-state p {
-    font-size: 0.82rem;
-    letter-spacing: 0.08em;
+.unirse-error p {
+    color: rgba(255, 100, 100, 0.70);
 }
 
-/* Barra de estado */
-.unirse-estado-bar {
-    margin-top: auto;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0.5rem 0.75rem;
-    background: rgba(0, 18, 45, 0.4);
-    border: 1px solid rgba(0, 212, 255, 0.1);
-    border-radius: 6px;
+.unirse-empty p {
+    color: rgba(232, 184, 50, 0.70);
 }
 
-.unirse-estado-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #e8b832;
-    box-shadow: 0 0 6px rgba(232, 184, 50, 0.7);
-    animation: pulse-dot 1.5s ease-in-out infinite alternate;
-    flex-shrink: 0;
-}
 
-@keyframes pulse-dot {
-    from { opacity: 0.5; transform: scale(0.85); }
-    to   { opacity: 1;   transform: scale(1.15); }
-}
-
-.unirse-estado-text {
-    font-size: 0.78rem;
-    color: rgba(160, 205, 235, 0.65);
-    letter-spacing: 0.08em;
-}
-
-.unirse-estado-text strong {
-    color: #e8b832;
-    font-weight: 600;
-    text-transform: capitalize;
-}
 
 @media (max-width: 640px) {
     .unirse-layout { grid-template-columns: 1fr; }
