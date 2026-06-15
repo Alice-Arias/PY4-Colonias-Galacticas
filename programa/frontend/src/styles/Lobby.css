@@ -436,6 +436,76 @@
     padding: 0;
 }
 
+/* Overlay de countdown */
+.lobby-countdown {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(1, 4, 16, 0.75);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    animation: countdown-overlay-in 0.3s ease forwards;
+}
+
+@keyframes countdown-overlay-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.lobby-countdown::before {
+    content: '';
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 212, 255, 0.15);
+    animation: ring-expand 1s ease-out infinite;
+}
+
+.lobby-countdown::after {
+    content: '';
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 212, 255, 0.08);
+    animation: ring-expand 1s ease-out infinite 0.3s;
+}
+
+@keyframes ring-expand {
+    0%   { transform: scale(0.8);  opacity: 1; }
+    100% { transform: scale(2.2);  opacity: 0; }
+}
+
+.lobby-countdown span {
+    position: relative;
+    z-index: 1;
+
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(5rem, 18vw, 9rem);
+    font-weight: 700;
+    color: #ffffff;
+
+    text-shadow:
+        0 0 30px rgba(0, 212, 255, 0.9),
+        0 0 60px rgba(0, 212, 255, 0.5),
+        0 0 100px rgba(0, 150, 255, 0.3);
+
+    animation: number-pop 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    display: block;
+}
+
+@keyframes number-pop {
+    0%   { transform: scale(2.5); opacity: 0; filter: blur(8px); }
+    40%  { opacity: 1;            filter: blur(0); }
+    70%  { transform: scale(0.95); }
+    85%  { transform: scale(1.03); }
+    100% { transform: scale(1);   opacity: 1; }
+}
+
 @media (max-width: 540px) {
     .lobby-card { padding: 1.4rem 1.2rem; }
     .lobby-title { font-size: 1.1rem; }

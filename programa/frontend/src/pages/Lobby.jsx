@@ -10,6 +10,8 @@ function Lobby() {
     const navigate = useNavigate();
     const location = useLocation();
 
+    const [countdown, setCountdown] = useState(null); //Para el contador de inicio de partida
+
     const [lobby, setLobby] = useState(location.state?.lobbyInicial || null);
 
     const partidaId = location.state?.partidaId;
@@ -50,6 +52,21 @@ function Lobby() {
         socket.emit("start_game", partidaId);
     };
 
+    useEffect(() => {
+        const handleCountdown = (segundos) => {
+            setCountdown(segundos);
+            if (segundos === 0) {
+                setTimeout(() => setCountdown(null), 800);
+            }
+        };
+
+        socket.on("countdown", handleCountdown);
+
+        return () => {
+            socket.off("countdown", handleCountdown);
+        };
+    }, []);
+
     return (
         <div
             className="lobby-page"
@@ -83,6 +100,11 @@ function Lobby() {
 
                 </div>
             </div>
+            {countdown !== null && (
+                <div className="lobby-countdown">
+                    {countdown}
+                </div>
+            )}
         </div>
     );
 }

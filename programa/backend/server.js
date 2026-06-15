@@ -150,7 +150,7 @@ io.on("connection", (socket) => {
 
         partida.estado = "countdown";
 
-        let t = 5;
+        let t = 10;
 
         const interval = setInterval(() => {
             io.to(partidaId).emit("countdown", t);
