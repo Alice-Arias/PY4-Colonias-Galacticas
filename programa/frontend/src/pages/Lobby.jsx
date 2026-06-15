@@ -7,16 +7,26 @@ import LobbyPlayersPanel from "../components/LobbyPlayersPanel";
 
 function Lobby() {
     const fxRef = useRef(null);
+    const gameStartFallbackRef = useRef(null);
     const navigate = useNavigate();
     const location = useLocation();
 
     const [countdown, setCountdown] = useState(null); //Para el contador de inicio de partida
+    const [tiempoRestante, setTiempoRestante] = useState(null); //Para el tiempo de espera de la partida
     const [mensajeFinal, setMensajeFinal] = useState(false);
 
     const [lobby, setLobby] = useState(location.state?.lobbyInicial || null);
 
-    const partidaId = location.state?.partidaId;
+    const partidaId = location.state?.partidaId || sessionStorage.getItem("partidaId") || localStorage.getItem("partidaId");
     const isHost = location.state?.isHost ?? false;
+    const salaCompleta = Boolean(lobby?.jugadores?.length && lobby?.maxJugadores && lobby.jugadores.length >= lobby.maxJugadores);
+
+    useEffect(() => {
+        if (partidaId) {
+            sessionStorage.setItem("partidaId", partidaId);
+            localStorage.setItem("partidaId", partidaId);
+        }
+    }, [partidaId]);
 
     useEffect(() => {
         const el = fxRef.current;
@@ -34,30 +44,58 @@ function Lobby() {
             `;
             el.appendChild(line);
         }
-    }, []);
+    }, [navigate]);
 
     useEffect(() => {
-        const handleLobbyUpdate = (data) => setLobby(data);
+        const handleLobbyUpdate = (data) => {
+            setLobby(data);
+            if (data.tiempoRestante !== undefined) {
+                setTiempoRestante(data.tiempoRestante);
+            }
+        };
         const handleGameStarted = () => {
+            if (gameStartFallbackRef.current) {
+                clearTimeout(gameStartFallbackRef.current);
+                gameStartFallbackRef.current = null;
+            }
             setCountdown(null);
             setMensajeFinal(true);
 
             setTimeout(() => {
                 navigate("/partida");
-            }, 2500);
+            }, 1200);
+        };
+
+        const handleTiempoRestanteUpdate = (data) => {
+            setTiempoRestante(data.tiempoRestante);
+        };
+
+        const handlePartidaExpirada = () => {
+            alert("La partida ha expirado por falta de jugadores");
+            navigate("/");
         };
 
         socket.on("lobby_update", handleLobbyUpdate);
         socket.on("game_started", handleGameStarted);
+        socket.on("tiempo_restante_update", handleTiempoRestanteUpdate);
+        socket.on("partida_expirada", handlePartidaExpirada);
 
         return () => {
             socket.off("lobby_update", handleLobbyUpdate);
             socket.off("game_started", handleGameStarted);
+            socket.off("tiempo_restante_update", handleTiempoRestanteUpdate);
+            socket.off("partida_expirada", handlePartidaExpirada);
         };
     }, [navigate]);
 
     const iniciarPartida = () => {
         socket.emit("start_game", partidaId);
+    };
+
+    const formatearTiempo = (segundos) => {
+        const mins = Math.floor(segundos / 60);
+        const segs = segundos % 60;
+        return `${mins}:${segs.toString().padStart(2, "0")}`;
     };
 
     useEffect(() => {
@@ -69,8 +107,42 @@ function Lobby() {
 
         return () => {
             socket.off("countdown", handleCountdown);
+            if (gameStartFallbackRef.current) {
+                clearTimeout(gameStartFallbackRef.current);
+                gameStartFallbackRef.current = null;
+            }
         };
-    }, []);
+    }, [navigate]);
+
+    useEffect(() => {
+        if (countdown !== 0) return;
+
+        if (gameStartFallbackRef.current) {
+            clearTimeout(gameStartFallbackRef.current);
+        }
+
+        gameStartFallbackRef.current = setTimeout(() => {
+            setMensajeFinal(true);
+            navigate("/partida");
+        }, 1800);
+
+        return () => {
+            if (gameStartFallbackRef.current) {
+                clearTimeout(gameStartFallbackRef.current);
+                gameStartFallbackRef.current = null;
+            }
+        };
+    }, [countdown, navigate]);
+
+    useEffect(() => {
+        if (mensajeFinal && countdown === null) {
+            const redirectTimeout = setTimeout(() => {
+                navigate("/partida");
+            }, 600);
+
+            return () => clearTimeout(redirectTimeout);
+        }
+    }, [mensajeFinal, countdown, navigate]);
 
     return (
         <div
@@ -88,6 +160,16 @@ function Lobby() {
                         <h1 className="lobby-title">Lobby de Partida</h1>
                     </div>
 
+                    {tiempoRestante !== null && (
+                        <div className="lobby-timer">
+                            <div className="lobby-timer-label">Tiempo de espera</div>
+                            <div className="lobby-timer-display">
+                                <span className="lobby-timer-icon">⏱</span>
+                                <span className="lobby-timer-text">{formatearTiempo(tiempoRestante)}</span>
+                            </div>
+                        </div>
+                    )}
+
                     <LobbyPlayersPanel lobby={lobby} partidaId={partidaId} />
 
                     <div className="lobby-actions">
@@ -95,8 +177,10 @@ function Lobby() {
                             <button
                                 className="lobby-primary-btn"
                                 onClick={iniciarPartida}
+                                disabled={!salaCompleta}
+                                title={salaCompleta ? "Entrar al juego" : "Esperando que se complete la sala"}
                             >
-                                Iniciar Partida
+                                Entrar al juego
                             </button>
                         )}
                         <button

@@ -3,15 +3,22 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import backgroundLogin from "../assets/backgroundLogin.jpeg";
 
+// ======================================================
+// NOMBRE: Pantalla de Login
+// ENTRADA: nombre escrito por el usuario
+// SALIDA: navegación a crear/unirse/ranking
+// RESTRICCIONES: nickname entre 4 y 20 caracteres
+// OBJETIVO: capturar identidad del jugador para la sesión
+// ======================================================
 function Login() {
-    const fxRef = useRef(null);
-    const navigate = useNavigate();
+    const referenciaEfecto = useRef(null);
+    const navegar = useNavigate();
 
-    const [nickname, setNickname] = useState("");
+    const [apodoJugador, setApodoJugador] = useState("");
 
     useEffect(() => {
-        const el = fxRef.current;
-        if (!el) return;
+        const contenedorEfecto = referenciaEfecto.current;
+        if (!contenedorEfecto) return;
 
         for (let i = 0; i < 14; i++) {
             const line = document.createElement("div");
@@ -27,30 +34,38 @@ function Login() {
                 --delay: -${(Math.random() * 8).toFixed(1)}s;
             `;
 
-            el.appendChild(line);
+            contenedorEfecto.appendChild(line);
         }
     }, []);
 
+    // ======================================================
+    // NOMBRE: validarNickname
+    // ENTRADA: estado local apodoJugador
+    // SALIDA: nickname limpio o null si no cumple
+    // RESTRICCIONES: longitud mínima 4 y máxima 20
+    // OBJETIVO: garantizar datos válidos antes de navegar
+    // ======================================================
     const validarNickname = () => {
-        const limpio = nickname.trim();
+        const nicknameLimpio = apodoJugador.trim();
 
-        if (!limpio) {
+        if (!nicknameLimpio) {
             alert("Ingrese un nickname");
             return null;
         }
 
-        if (limpio.length < 4) {
+        if (nicknameLimpio.length < 4) {
             alert("El nickname debe tener al menos 4 caracteres");
             return null;
         }
 
-        if (limpio.length > 20) {
+        if (nicknameLimpio.length > 20) {
             alert("El nickname no puede tener más de 20 caracteres");
             return null;
         }
 
-        localStorage.setItem("nickname", limpio);
-        return limpio;
+        sessionStorage.setItem("nickname", nicknameLimpio);
+        localStorage.setItem("nickname", nicknameLimpio);
+        return nicknameLimpio;
     };
 
     const manejarEnter = (e) => {
@@ -61,12 +76,12 @@ function Login() {
 
     const crearPartida = () => {
         if (!validarNickname()) return;
-        navigate("/crear");
+        navegar("/crear");
     };
 
     const unirsePartida = () => {
         if (!validarNickname()) return;
-        navigate("/unirse");
+        navegar("/unirse");
     };
 
     return (
@@ -74,7 +89,7 @@ function Login() {
             className="login"
             style={{ backgroundImage: `url(${backgroundLogin})` }}
         >
-            <div className="login-bg-fx" ref={fxRef}></div>
+            <div className="login-bg-fx" ref={referenciaEfecto}></div>
 
             <div className="login-overlay">
                 <div className="login-card">
@@ -88,8 +103,8 @@ function Login() {
                         type="text"
                         placeholder="Nombre de usuario"
                         className="login-input"
-                        value={nickname}
-                        onChange={(e) => setNickname(e.target.value)}
+                        value={apodoJugador}
+                        onChange={(e) => setApodoJugador(e.target.value)}
                         onKeyDown={manejarEnter}
                         maxLength={20}
                     />
@@ -103,7 +118,7 @@ function Login() {
                             Unirse a partida
                         </button>
 
-                        <button onClick={() => navigate("/ranking")}>
+                        <button onClick={() => navegar("/ranking")}>
                             Ver rankings
                         </button>
                     </div>

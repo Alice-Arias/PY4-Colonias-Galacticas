@@ -1,100 +1,185 @@
-const galaxiaBase = require("../src/data/galaxia.json");
+const catalogoGalaxias = require("../src/data/galaxia.json");
 
-// ===================================================================
-// NOMBRE: Tipos de producción de sistemas
-// ENTRADA: tipo de sistema (minero, energético, científico, balanceado)
-// SALIDA: objeto con cantidades de recursos producidos por ciclo
-// RESTRICCIONES:
-// - No modificar los valores base sin ajustar balance del juego
-// - Cada tipo debe mantener estructura idéntica
-// OBJETIVO:
-// Definir la economía base del juego según el tipo de sistema
-// ===================================================================
 const produccionBase = {
   minero: { minerales: 100, energia: 30, cristales: 10 },
   energetico: { minerales: 50, energia: 50, cristales: 10 },
   cientifico: { minerales: 40, energia: 40, cristales: 30 },
-  balanceado: { minerales: 35, energia: 35, cristales: 35 }
+  balanceado: { minerales: 35, energia: 35, cristales: 35 },
 };
 
-// ===================================================================
-// NOMBRE: Crear universo
-// ENTRADA: galaxiaBase (estructura JSON con sistemas)
-// SALIDA: galaxia procesada lista para ser usada en el juego
-// RESTRICCIONES:
-// - No alterar estructura original de galaxiaBase
-// - Mantener posición, id y datos base de cada sistema
-// - defensa debe ser un número aleatorio entre 0 y 99
-// - propietario debe iniciar en null
-// OBJETIVO:
-// Inicializar la galaxia con estados neutrales para inicio de partida
-// ===================================================================
-function crearUniverso() {
-  const sistemasProcesados = galaxiaBase.sistemas.map((s) => ({
-    ...s,
+const coordenadasBase = [
+  { x: 120, y: 90 },
+  { x: 260, y: 90 },
+  { x: 400, y: 90 },
+  { x: 540, y: 90 },
+  { x: 680, y: 90 },
+  { x: 120, y: 190 },
+  { x: 260, y: 190 },
+  { x: 400, y: 190 },
+  { x: 540, y: 190 },
+  { x: 680, y: 190 },
+  { x: 120, y: 290 },
+  { x: 260, y: 290 },
+  { x: 400, y: 290 },
+  { x: 540, y: 290 },
+  { x: 680, y: 290 },
+  { x: 120, y: 390 },
+  { x: 260, y: 390 },
+  { x: 400, y: 390 },
+  { x: 540, y: 390 },
+  { x: 680, y: 390 },
+  { x: 120, y: 470 },
+  { x: 260, y: 470 },
+  { x: 400, y: 470 },
+  { x: 540, y: 470 },
+  { x: 680, y: 470 },
+];
 
-    estado: "neutral",
+class Sistema {
+  constructor(datos) {
+    this.id = datos.id;
+    this.nombre = datos.nombre;
+    this.tipo = datos.tipo;
+    this.x = datos.x;
+    this.y = datos.y;
+    this.estado = "neutral";
+    this.propietario = null;
+    this.defensa = Math.floor(Math.random() * 100);
+    this.recursos = {
+                      minerales: 0,
+                      energia: 0,
+                      cristales: 0,
+    };
+    this.produccion = produccionBase[this.tipo] || produccionBase.balanceado;
+  }
 
-    propietario: null,
+  producir() {
+    const produccion = this.produccion;
 
-    defensa: Math.floor(Math.random() * 100),
-
-    recursos: {
-      minerales: 0,
-      energia: 0,
-      cristales: 0
-    },
-
-    produccion: produccionBase[s.tipo] || produccionBase.balanceado
-  }));
-
-  return {
-    ...galaxiaBase,
-    sistemas: sistemasProcesados
-  };
+    this.recursos.minerales += produccion.minerales;
+    this.recursos.energia += produccion.energia;
+    this.recursos.cristales += produccion.cristales;
+  }
 }
 
-// ===================================================================
-// NOMBRE: Inicio de producción automática
-// ENTRADA:
-// - partida: objeto de la partida activa
-// - intervalo: tiempo en milisegundos entre ciclos de producción
-// SALIDA:
-// - actualización constante de recursos en la galaxia
-// - emisión de estado actualizado por socket global
-// RESTRICCIONES:
-// - Solo ejecuta si partida y galaxia existen
-// - No debe reiniciar recursos existentes
-// - No debe crear múltiples intervalos duplicados sin control externo
-// - Requiere global.io para emitir eventos
-// OBJETIVO:
-// Simular producción en tiempo real dentro del universo del juego
-// ===================================================================
-function iniciarProduccion(partida, intervalo = 20000) {
-  setInterval(() => {
-    if (!partida?.galaxia) return;
-
-    partida.galaxia.sistemas.forEach((s) => {
-      const p = s.produccion;
-      if (!p) return;
-
-      s.recursos.minerales += p.minerales;
-      s.recursos.energia += p.energia;
-      s.recursos.cristales += p.cristales;
+class Galaxia {
+  constructor(datos) {
+    this.nombre = datos.nombre;
+    this.sistemas = datos.sistemas.map((sistema, indice) => {
+      const coordenadas = coordenadasBase[indice] || { x: 0, y: 0 };
+      return new Sistema({ ...sistema, ...coordenadas });
     });
+    this.rutas = datos.rutas.map((ruta) => [...ruta]);
+  }
 
-    if (global.io) {
-      global.io.to(partida.id).emit("galaxia_update", partida.galaxia);
+  static desdeNombre(nombre) {
+    const galaxia = catalogoGalaxias.galaxias.find((item) => item.nombre === nombre);
+
+    if (!galaxia) {
+      return null;
     }
 
-  }, intervalo);
+    return new Galaxia(galaxia);
+  }
+
+  producir() {
+    this.sistemas.forEach((sistema) => sistema.producir());
+  }
 }
 
-// ===================================================================
-// EXPORTACIÓN DEL MÓDULO
-// ===================================================================
-// Expone funciones principales del sistema de universo
+class Universo {
+  constructor() {
+    this.catalogo = catalogoGalaxias.galaxias;
+  }
+
+  listarGalaxias() {
+    return this.catalogo.map((galaxia) => ({
+      nombre: galaxia.nombre,
+      sistemas: galaxia.sistemas.length,
+    }));
+  }
+
+  crearGalaxia(nombre) {
+    const galaxia = Galaxia.desdeNombre(nombre) || Galaxia.desdeNombre(this.catalogo[0]?.nombre);
+
+    if (!galaxia) {
+      throw new Error("No hay galaxias disponibles");
+    }
+
+    return galaxia;
+  }
+}
+
+const universo = new Universo();
+
+class Partida {
+  constructor({ id, nombre, maxJugadores, host, galaxia, tiempoEspera = 300 }) {
+    this.id = id;
+    this.nombre = nombre;
+    this.maxJugadores = maxJugadores;
+    this.estado = "esperando";
+    this.host = host;
+    this.jugadores = [];
+    this.galaxia = galaxia;
+    this.intervaloProduccion = null;
+    this.tiempoEspera = tiempoEspera;
+    this.tiempoCreacion = Date.now();
+    this.tiempoExpiracion = Date.now() + tiempoEspera * 1000;
+  }
+
+  obtenerTiempoRestante() {
+    const ahora = Date.now();
+    const tiempoRestante = Math.max(0, Math.floor((this.tiempoExpiracion - ahora) / 1000));
+    return tiempoRestante;
+  }
+
+  estaExpirada() {
+    return this.obtenerTiempoRestante() <= 0;
+  }
+
+  agregarJugador(jugador) {
+    const existe = this.jugadores.some((actual) => actual.id === jugador.id);
+
+    if (!existe) {
+      this.jugadores.push(jugador);
+    }
+  }
+
+  puedeIniciar(socketId) {
+    return this.host === socketId && this.jugadores.length >= 2;
+  }
+
+  iniciarProduccion(intervalo = 20000) {
+    if (this.intervaloProduccion) {
+      clearInterval(this.intervaloProduccion);
+    }
+
+    this.intervaloProduccion = setInterval(() => {
+      if (!this.galaxia) {
+        return;
+      }
+
+      this.galaxia.producir();
+
+      if (global.io) {
+        global.io.to(this.id).emit("galaxia_update", this.galaxia);
+      }
+    }, intervalo);
+  }
+}
+
+function crearUniverso(nombreGalaxia) {
+  return universo.crearGalaxia(nombreGalaxia);
+}
+
+function listarGalaxias() {
+  return universo.listarGalaxias();
+}
+
 module.exports = {
+  Partida,
+  Universo,
+  universo,
   crearUniverso,
-  iniciarProduccion
+  listarGalaxias,
 };

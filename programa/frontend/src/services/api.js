@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://hardener-moonstone-epidermis.ngrok-free.dev"
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3002"
 });
 
 export default api;

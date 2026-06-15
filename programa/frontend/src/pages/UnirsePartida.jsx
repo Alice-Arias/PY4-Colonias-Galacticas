@@ -1,18 +1,21 @@
 import "../styles/UnirsePartida.css";
 import { useState, useEffect, useRef } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import socket from "../services/socket";
 import backgroundLogin from "../assets/backgroundLogin.jpeg";
-import LobbyPlayersPanel from "../components/LobbyPlayersPanel";
+import "../components/LobbyPlayersPanel";
+
+const getStoredNickname = () => sessionStorage.getItem("nickname") || localStorage.getItem("nickname") || "";
 
 export default function UnirsePartida() {
-    const location = useLocation();
     const navigate = useNavigate();
     const fxRef = useRef(null);
 
-    const [partidaId, setPartidaId] = useState(location.state?.partidaId || "");
+    const [partidas, setPartidas] = useState([]);
+    const [cargando, setCargando] = useState(true);
+    const [error, setError] = useState("");
 
-    const nickname = localStorage.getItem("nickname");
+    const nickname = getStoredNickname();
 
     useEffect(() => {
         const el = fxRef.current;
@@ -32,15 +35,51 @@ export default function UnirsePartida() {
         }
     }, []);
 
-    const unirse = () => {
-        if (!partidaId.trim()) return;
+    useEffect(() => {
+        // Solicitar partidas disponibles al conectar
+        socket.emit("get_available_games");
 
+        socket.on("available_games", (partidasDisponibles) => {
+            setPartidas(partidasDisponibles);
+            setCargando(false);
+            setError("");
+        });
+
+        socket.on("tiempo_restante_update", (data) => {
+            setPartidas((prevPartidas) =>
+                prevPartidas.map((p) => ({
+                    ...p,
+                    tiempoRestante: data.tiempoRestante,
+                }))
+            );
+        });
+
+        socket.on("partida_expirada", () => {
+            socket.emit("get_available_games");
+        });
+
+        // Actualizar partidas cada 2 segundos
+        const intervalo = setInterval(() => {
+            socket.emit("get_available_games");
+        }, 2000);
+
+        return () => {
+            clearInterval(intervalo);
+            socket.off("available_games");
+            socket.off("tiempo_restante_update");
+            socket.off("partida_expirada");
+        };
+    }, []);
+
+    const unirse = (partidaId) => {
         socket.emit("join_game", {
             partidaId,
             nickname,
         });
 
         socket.once("joined_game", (partida) => {
+            sessionStorage.setItem("partidaId", partida.id);
+            localStorage.setItem("partidaId", partida.id);
             navigate("/lobby", {
                 state: {
                     partidaId: partida.id,
@@ -49,6 +88,16 @@ export default function UnirsePartida() {
                 },
             });
         });
+    };
+
+    const puedeUnirse = (partida) => {
+        return partida.jugadoresActuales < partida.maxJugadores && partida.estado === "esperando";
+    };
+
+    const formatearTiempo = (segundos) => {
+        const mins = Math.floor(segundos / 60);
+        const segs = segundos % 60;
+        return `${mins}:${segs.toString().padStart(2, "0")}`;
     };
 
     return (
@@ -60,34 +109,63 @@ export default function UnirsePartida() {
 
             <div className="unirse-overlay">
                 <div className="unirse-layout">
-                    {/* Card izquierda */}
+                    {/* Card principal */}
                     <div className="unirse-card">
                         <div className="unirse-header">
                             <span className="unirse-eyebrow">
                                 ◆ Colonias Galácticas ◆
                             </span>
-                            <h1 className="unirse-title">Entra en una sala existente</h1>
+                            <h1 className="unirse-title">Unirse a una partida</h1>
                         </div>
 
-                        <p className="unirse-section-label">Acceso a partida</p>
+                        <p className="unirse-section-label">Partidas disponibles</p>
 
-                        <div className="unirse-form-group">
-                            <label htmlFor="partidaId">ID de partida</label>
-                            <input
-                                id="partidaId"
-                                className="unirse-field"
-                                placeholder="Ingresa el código de partida"
-                                value={partidaId}
-                                onChange={(e) => setPartidaId(e.target.value)}
-                            />
-                        </div>
+                        {cargando ? (
+                            <div className="unirse-loading">
+                                <p>Cargando partidas...</p>
+                            </div>
+                        ) : error ? (
+                            <div className="unirse-error">
+                                <p>{error}</p>
+                            </div>
+                        ) : partidas.length === 0 ? (
+                            <div className="unirse-empty">
+                                <p>No hay partidas disponibles en este momento</p>
+                            </div>
+                        ) : (
+                            <div className="unirse-games-list">
+                                {partidas.map((partida) => (
+                                    <div key={partida.id} className="unirse-game-card">
+                                        <div className="game-card-header">
+                                            <h3 className="game-card-name">{partida.nombre}</h3>
+                                            <span className="game-card-id">ID: {partida.id}</span>
+                                        </div>
+                                        <div className="game-card-timer">
+                                            <div className="timer-icon">⏱</div>
+                                            <div className="timer-text">{formatearTiempo(partida.tiempoRestante)}</div>
+                                        </div>
+                                        <div className="game-card-details">
+                                            <p><strong>Galaxia:</strong> {partida.nombreGalaxia}</p>
+                                            <p>
+                                                <strong>Jugadores:</strong> {partida.jugadoresActuales}/{partida.maxJugadores}
+                                            </p>
+                                            <p><strong>Estado:</strong> {partida.estado}</p>
+                                        </div>
+                                        <button
+                                            className={`unirse-btn-join ${!puedeUnirse(partida) ? "disabled" : ""}`}
+                                            onClick={() => unirse(partida.id)}
+                                            disabled={!puedeUnirse(partida)}
+                                        >
+                                            {puedeUnirse(partida) ? "Unirse" : "Partida llena"}
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
 
-                        <button className="unirse-btn-primary" onClick={unirse}>
-                            Unirse a partida
-                        </button>
                         <button className="unirse-btn-back" onClick={() => navigate("/")}>
                             Volver al inicio
-                      </button>
+                        </button>
                     </div>
                 </div>
             </div>
