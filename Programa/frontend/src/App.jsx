@@ -5,6 +5,7 @@ import CrearPartida from "./pages/CrearPartida";
 import UnirsePartida from "./pages/UnirsePartida";
 import Ranking from "./pages/Ranking";
 import Juego from "./pages/Juego";
+import Lobby from "./pages/Lobby";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
       <Route path="/unirse" element={<UnirsePartida />} />
       <Route path="/ranking" element={<Ranking />} />
       <Route path="/juego" element={<Juego />} />
+      <Route path="/lobby" element={<Lobby />} />
     </Routes>
   );
 }

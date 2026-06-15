@@ -54,141 +54,142 @@ const partidas = {};
 io.on("connection", (socket) => {
     console.log("Jugador conectado:", socket.id);
 
-  // ======================================================
-  // NOMBRE: Crear partida
-  // ENTRADA: configuración de partida (nombre, max jugadores, nickname)
-  // SALIDA: nueva partida creada y emitida a clientes
-  // RESTRICCIONES:
-  // - ID debe ser único
-  // - El creador se convierte en host
-  // - No puede exceder lógica del sistema
-  // OBJETIVO:
-  // Crear una sala de juego nueva
-  // ======================================================
+    // ======================================================
+    // NOMBRE: Crear partida
+    // ENTRADA: configuración de partida (nombre, max jugadores, nickname)
+    // SALIDA: nueva partida creada y emitida a clientes
+    // RESTRICCIONES:
+    // - ID debe ser único
+    // - El creador se convierte en host
+    // - No puede exceder lógica del sistema
+    // OBJETIVO:
+    // Crear una sala de juego nueva
+    // ======================================================
     socket.on("create_game", (config) => {
-    const id = Math.random().toString(36).substring(2, 8);
+        const id = Math.random().toString(36).substring(2, 8);
 
-    const partida = {
-        id,
-        nombre: config.nombre,
-        maxJugadores: config.maxJugadores,
-        estado: "esperando",
-        host: socket.id,
-        jugadores: [],
-    };
+        const partida = {
+            id,
+            nombre: config.nombre,
+            maxJugadores: config.maxJugadores,
+            estado: "esperando",
+            host: socket.id,
+            jugadores: [],
+        };
 
-    partidas[id] = partida;
+        partidas[id] = partida;
 
-    socket.join(id);
+        socket.join(id);
 
-    // Host entra automáticamente a la partida
-    partida.jugadores.push({
-        id: socket.id,
-        nickname: config.nickname,
-        host: true,
-    });
-
-    io.to(id).emit("lobby_update", partida);
-    io.emit("partida_creada", partida);
-    });
-
-  // ======================================================
-  // NOMBRE: Unirse a partida
-  // ENTRADA: id de partida y nickname
-  // SALIDA: jugador agregado al lobby
-  // RESTRICCIONES:
-  // - No puede exceder max jugadores
-  // - No duplicar jugadores
-  // - Partida debe existir
-  // OBJETIVO:
-  // Permitir entrada de jugadores al lobby
-  // ======================================================
-    socket.on("join_game", ({ partidaId, nickname }) => {
-    const partida = partidas[partidaId];
-    if (!partida) return;
-
-    if (partida.jugadores.length >= partida.maxJugadores) return;
-
-    const existe = partida.jugadores.find((j) => j.id === socket.id);
-
-    if (!existe) {
+        // Host entra automáticamente a la partida
         partida.jugadores.push({
-        id: socket.id,
-        nickname,
-        host: false,
+            id: socket.id,
+            nickname: config.nickname,
+            host: true,
         });
-    }
 
-    socket.join(partidaId);
-    io.to(partidaId).emit("lobby_update", partida);
+        io.to(id).emit("lobby_update", partida);
+        socket.emit("partida_creada", partida);
     });
 
-  // ======================================================
-  // NOMBRE: Iniciar partida con countdown
-  // ENTRADA: id de partida
-  // SALIDA: cuenta regresiva y comienzo del juego
-  // RESTRICCIONES:
-  // - Solo host puede iniciar
-  // - Mínimo 2 jugadores
-  // - No iniciar si partida no existe
-  // OBJETIVO:
-  // Controlar inicio sincronizado del juego
-  // ======================================================
-    socket.on("start_game", (partidaId) => {
-    const partida = partidas[partidaId];
-    if (!partida) return;
+    // ======================================================
+    // NOMBRE: Unirse a partida
+    // ENTRADA: id de partida y nickname
+    // SALIDA: jugador agregado al lobby
+    // RESTRICCIONES:
+    // - No puede exceder max jugadores
+    // - No duplicar jugadores
+    // - Partida debe existir
+    // OBJETIVO:
+    // Permitir entrada de jugadores al lobby
+    // ======================================================
+    socket.on("join_game", ({ partidaId, nickname }) => {
+        const partida = partidas[partidaId];
+        if (!partida) return;
 
-    if (partida.host !== socket.id) return;
+        if (partida.jugadores.length >= partida.maxJugadores) return;
 
-    if (partida.jugadores.length < 2) {
-        socket.emit("error_start", {
-        mensaje: "Se necesitan mínimo 2 jugadores",
-        });
-        return;
-    }
+        const existe = partida.jugadores.find((j) => j.id === socket.id);
 
-    partida.estado = "countdown";
-
-    let t = 5;
-
-    const interval = setInterval(() => {
-        io.to(partidaId).emit("countdown", t);
-        t--;
-
-        if (t < 0) {
-        clearInterval(interval);
-
-        partida.estado = "jugando";
-
-        iniciarProduccion(partida);
-
-        io.to(partidaId).emit("game_started", {
-            partida,
-        });
+        if (!existe) {
+            partida.jugadores.push({
+                id: socket.id,
+                nickname,
+                host: false,
+            });
         }
-    }, 1000);
+
+        socket.join(partidaId);
+        socket.emit("joined_game", partida);
+        io.to(partidaId).emit("lobby_update", partida);
     });
 
-  // ======================================================
-  // NOMBRE: Desconexión de jugador
-  // ENTRADA: socket desconectado
-  // SALIDA: jugador eliminado de partidas activas
-  // RESTRICCIONES:
-  // - No debe dejar referencias inválidas
-  // - Debe limpiar correctamente todas las partidas
-  // OBJETIVO:
-  // Mantener integridad del estado del servidor
-  // ======================================================
-    socket.on("disconnect", () => {
-    Object.values(partidas).forEach((p) => {
-        p.jugadores = p.jugadores.filter((j) => j.id !== socket.id);
+    // ======================================================
+    // NOMBRE: Iniciar partida con countdown
+    // ENTRADA: id de partida
+    // SALIDA: cuenta regresiva y comienzo del juego
+    // RESTRICCIONES:
+    // - Solo host puede iniciar
+    // - Mínimo 2 jugadores
+    // - No iniciar si partida no existe
+    // OBJETIVO:
+    // Controlar inicio sincronizado del juego
+    // ======================================================
+    socket.on("start_game", (partidaId) => {
+        const partida = partidas[partidaId];
+        if (!partida) return;
+
+        if (partida.host !== socket.id) return;
+
+        if (partida.jugadores.length < 2) {
+            socket.emit("error_start", {
+                mensaje: "Se necesitan mínimo 2 jugadores",
+            });
+            return;
+        }
+
+        partida.estado = "countdown";
+
+        let t = 5;
+
+        const interval = setInterval(() => {
+            io.to(partidaId).emit("countdown", t);
+            t--;
+
+            if (t < 0) {
+                clearInterval(interval);
+
+                partida.estado = "jugando";
+
+                iniciarProduccion(partida);
+
+                io.to(partidaId).emit("game_started", {
+                    partida,
+                });
+            }
+        }, 1000);
     });
+
+    // ======================================================
+    // NOMBRE: Desconexión de jugador
+    // ENTRADA: socket desconectado
+    // SALIDA: jugador eliminado de partidas activas
+    // RESTRICCIONES:
+    // - No debe dejar referencias inválidas
+    // - Debe limpiar correctamente todas las partidas
+    // OBJETIVO:
+    // Mantener integridad del estado del servidor
+    // ======================================================
+    socket.on("disconnect", () => {
+        Object.values(partidas).forEach((p) => {
+            p.jugadores = p.jugadores.filter((j) => j.id !== socket.id);
+        });
     });
 });
 app.get("/", (req, res) => {
     res.json({
-    ok: true,
-    mensaje: "Servidor multijugador activo ",
+        ok: true,
+        mensaje: "Servidor multijugador activo ",
     });
 });
 // ======================================================

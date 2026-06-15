@@ -11,7 +11,13 @@ import { io } from "socket.io-client";
 // OBJETIVO:
 // Manejar comunicación en tiempo real del juego multijugador
 // ======================================================
-const socket = io("https://hardener-moonstone-epidermis.ngrok-free.dev", {
+
+
+// URL utilizada por el equipo mediante ngrok
+// const socket = io("https://hardener-moonstone-epidermis.ngrok-free.dev", {
+//     transports: ["websocket"]
+// });
+const socket = io("http://localhost:3002", {
     transports: ["websocket"]
 });
 

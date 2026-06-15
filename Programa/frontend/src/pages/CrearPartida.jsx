@@ -45,6 +45,7 @@ export default function CrearPartida() {
     }, []);
 
     const crear = () => {
+        console.log("Botón pulsado");
         if (!nombre.trim()) {
             alert("Ingresa un nombre de partida");
             return;
@@ -53,6 +54,7 @@ export default function CrearPartida() {
         const config = {
             nombre,
             galaxia,
+            nickname: localStorage.getItem("nickname"),
             maxJugadores: Number(maxJugadores),
             tiempoMax: Number(tiempoMax),
             tiempoEspera: Number(tiempoEspera),
@@ -62,12 +64,17 @@ export default function CrearPartida() {
                 alto: { minerales: 500, energia: 250, cristales: 100 },
             }[nivelRecursos],
         };
-
+        console.log("Enviando create_game");
+        console.log("Socket conectado:", socket.connected);
         socket.emit("create_game", config);
 
         socket.once("partida_creada", (partida) => {
-            alert("Partida creada: " + partida.id);
-            navigate("/unirse", { state: { partidaId: partida.id } });
+            navigate("/lobby", {
+                state: {
+                    partidaId: partida.id,
+                    isHost: true,
+                },
+            });
         });
     };
 
@@ -255,7 +262,6 @@ export default function CrearPartida() {
                                     className="crear-btn-back"
                                     onClick={() => navigate("/")}
                                 >
-                                    <RiArrowGoBackFill className="back-icon" />{" "}
                                     Volver al inicio
                                 </button>
                             </div>

@@ -1,13 +1,14 @@
 import { PiDiamondsFourLight } from "react-icons/pi";
 import "../styles/LobbyPlayersPanel.css";
 
-function LobbyPlayersPanel({ lobby }) {
+function LobbyPlayersPanel({ lobby, partidaId }) {
 
     const getInitials = (name) =>
         name?.slice(0, 2).toUpperCase() ?? "??";
 
     return (
         <div className="unirse-players-panel">
+
             <div className="unirse-players-header">
                 <span className="unirse-players-title">
                     Jugadores en sala
@@ -18,6 +19,16 @@ function LobbyPlayersPanel({ lobby }) {
                         {lobby.jugadores.length} jugadores
                     </span>
                 )}
+            </div>
+
+            <div className="unirse-lobby-code">
+                <span className="unirse-lobby-label">
+                    Código de partida
+                </span>
+
+                <span className="unirse-lobby-id">
+                    {partidaId}
+                </span>
             </div>
 
             {lobby ? (

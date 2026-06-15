@@ -5,15 +5,12 @@ import socket from "../services/socket";
 import backgroundLogin from "../assets/backgroundLogin.jpeg";
 import LobbyPlayersPanel from "../components/LobbyPlayersPanel";
 
-import { PiDiamondsFourLight } from "react-icons/pi";
-
 export default function UnirsePartida() {
     const location = useLocation();
     const navigate = useNavigate();
     const fxRef = useRef(null);
 
     const [partidaId, setPartidaId] = useState(location.state?.partidaId || "");
-    const [lobby, setLobby] = useState(null);
 
     const nickname = localStorage.getItem("nickname");
 
@@ -37,24 +34,22 @@ export default function UnirsePartida() {
 
     const unirse = () => {
         if (!partidaId.trim()) return;
-        socket.emit("join_game", { partidaId, nickname });
+
+        socket.emit("join_game", {
+            partidaId,
+            nickname,
+        });
+
+        socket.once("joined_game", (partida) => {
+            navigate("/lobby", {
+                state: {
+                    partidaId: partida.id,
+                    isHost: false,
+                    lobbyInicial: partida,
+                },
+            });
+        });
     };
-
-    useEffect(() => {
-        const handleLobby = (data) => setLobby(data);
-        const handleStart = (data) => alert(data.mensaje);
-
-        socket.on("lobby_update", handleLobby);
-        socket.on("game_started", handleStart);
-
-        return () => {
-            socket.off("lobby_update", handleLobby);
-            socket.off("game_started", handleStart);
-        };
-    }, []);
-
-    // Iniciales para el avatar
-    const getInitials = (name) => name?.slice(0, 2).toUpperCase() ?? "??";
 
     return (
         <div
@@ -71,7 +66,7 @@ export default function UnirsePartida() {
                             <span className="unirse-eyebrow">
                                 ◆ Colonias Galácticas ◆
                             </span>
-                            <h1 className="unirse-title">Lobby</h1>
+                            <h1 className="unirse-title">Entra en una sala existente</h1>
                         </div>
 
                         <p className="unirse-section-label">Acceso a partida</p>
@@ -94,9 +89,6 @@ export default function UnirsePartida() {
                             Volver al inicio
                       </button>
                     </div>
-
-                    {/* Panel derecho */}
-                    <LobbyPlayersPanel lobby={lobby} />
                 </div>
             </div>
         </div>
