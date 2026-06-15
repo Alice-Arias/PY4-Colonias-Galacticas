@@ -18,6 +18,8 @@ const { Server } = require("socket.io");
 const { crearUniverso, iniciarProduccion } = require("./game/universo");
 const Construccion = require("./game/Construccion");
 const construccion = new Construccion();
+const Flota = require("./game/Flota");
+const flota = new Flota();
 
 const app = express();
 app.use(cors());
@@ -223,6 +225,30 @@ io.on("connection", (socket) => {
 
         io.to(partidaId).emit("galaxia_update", partida.galaxia);
         socket.emit("recursos_update", jugador.recursos);
+    });
+
+  // ======================================================
+  // NOMBRE: Mover flota
+  // ENTRADA: { partidaId, origenId, destinoId, cantidad }
+  // SALIDA: galaxia_update, error si falló
+  // RESTRICCIONES:
+  // - Partida activa
+  // - Validaciones en Flota.js
+  // OBJETIVO:
+  // Recibe la solisitud de movimiento y coordina una respuesta
+  // ======================================================
+    socket.on("move_fleet", ({ partidaId, origenId, destinoId, cantidad }) => {
+        const partida = partidas[partidaId];
+        if (!partida || partida.estado !== "jugando") return;
+
+        const resultado = flota.moverFlota(partida, socket.id, origenId, destinoId, cantidad);
+
+        if (resultado !== true) {
+            socket.emit("error_move", { mensaje: resultado.error });
+            return;
+        }
+
+        io.to(partidaId).emit("galaxia_update", partida.galaxia);
     });
 
   // ======================================================
