@@ -16,7 +16,8 @@ const http = require("http");
 const { Server } = require("socket.io");
 
 const { crearUniverso, iniciarProduccion } = require("./game/universo");
-const { construir } = require("./game/construccion");
+const Construccion = require("./game/Construccion");
+const construccion = new Construccion();
 
 const app = express();
 app.use(cors());
@@ -200,7 +201,7 @@ io.on("connection", (socket) => {
   // ======================================================
   // NOMBRE: Construir instalación en un sistema
   // ENTRADA: { partidaId, sistemaId, tipo }
-  // SALIDA: instalación agregada, recursos descontados, galaxia_update emitido
+  // SALIDA: instalación agregada, recursos descontados, galaxia_update
   // RESTRICCIONES:
   // - La partida debe estar en estado "jugando"
   // - Validaciones delegadas a construccion.js
@@ -211,15 +212,17 @@ io.on("connection", (socket) => {
         const partida = partidas[partidaId];
         if (!partida || partida.estado !== "jugando") return;
 
-        const resultado = construir(partida, socket.id, sistemaId, tipo);
+        const resultado = construccion.construir(partida, socket.id, sistemaId, tipo);
 
-        if (!resultado.ok) {
+        if (resultado !== true) {
             socket.emit("error_build", { mensaje: resultado.error });
             return;
         }
 
+        const jugador = partida.jugadores.find((j) => j.id === socket.id);
+
         io.to(partidaId).emit("galaxia_update", partida.galaxia);
-        socket.emit("recursos_update", resultado.jugador.recursos);
+        socket.emit("recursos_update", jugador.recursos);
     });
 
   // ======================================================
