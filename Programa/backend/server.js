@@ -16,6 +16,7 @@ const http = require("http");
 const { Server } = require("socket.io");
 
 const { crearUniverso, iniciarProduccion } = require("./game/universo");
+const { construir } = require("./game/construccion");
 
 const app = express();
 app.use(cors());
@@ -72,6 +73,8 @@ io.on("connection", (socket) => {
         id,
         nombre: config.nombre,
         maxJugadores: config.maxJugadores,
+        tiempoMax: config.tiempoMax,
+        recursosIniciales: config.recursosIniciales,
         estado: "esperando",
         host: socket.id,
         jugadores: [],
@@ -135,38 +138,88 @@ io.on("connection", (socket) => {
   // Controlar inicio sincronizado del juego
   // ======================================================
     socket.on("start_game", (partidaId) => {
-    const partida = partidas[partidaId];
-    if (!partida) return;
+        const partida = partidas[partidaId];
+        if (!partida) return;
 
-    if (partida.host !== socket.id) return;
+        if (partida.host !== socket.id) return;
 
-    if (partida.jugadores.length < 2) {
-        socket.emit("error_start", {
-        mensaje: "Se necesitan mínimo 2 jugadores",
-        });
-        return;
-    }
-
-    partida.estado = "countdown";
-
-    let t = 5;
-
-    const interval = setInterval(() => {
-        io.to(partidaId).emit("countdown", t);
-        t--;
-
-        if (t < 0) {
-        clearInterval(interval);
-
-        partida.estado = "jugando";
-
-        iniciarProduccion(partida);
-
-        io.to(partidaId).emit("game_started", {
-            partida,
-        });
+        if (partida.jugadores.length < 2) {
+            socket.emit("error_start", {
+                mensaje: "Se necesitan mínimo 2 jugadores",
+            });
+            return;
         }
-    }, 1000);
+
+  // ======================================================
+  // NOMBRE: Inicializar galaxia y jugadores al iniciar partida
+  // ENTRADA: partida con jugadores y recursosIniciales
+  // SALIDA: galaxia asignada, planeta base y recursos por jugador
+  // RESTRICCIONES:
+  // - Cada jugador recibe un planeta distinto
+  // - El sistema base pasa a estado "controlado"
+  // - recursosIniciales debe existir en la partida
+  // OBJETIVO:
+  // Preparar el estado inicial del juego para todos los jugadores
+  // ======================================================
+        partida.galaxia = crearUniverso();
+
+        const sistemasDisponibles = [...partida.galaxia.sistemas];
+
+        partida.jugadores.forEach((jugador) => {
+            const idx = Math.floor(Math.random() * sistemasDisponibles.length);
+            const planetaBase = sistemasDisponibles.splice(idx, 1)[0];
+
+            planetaBase.propietario = jugador.nickname;
+            planetaBase.estado = "controlado";
+
+            jugador.planetaBase = planetaBase.id;
+            jugador.recursos = { ...partida.recursosIniciales };
+            jugador.eliminado = false;
+        });
+
+        partida.estado = "countdown";
+
+        let t = 5;
+
+        const interval = setInterval(() => {
+            io.to(partidaId).emit("countdown", t);
+            t--;
+
+            if (t < 0) {
+                clearInterval(interval);
+
+                partida.estado = "jugando";
+
+                iniciarProduccion(partida);
+
+                io.to(partidaId).emit("game_started", { partida });
+            }
+        }, 1000);
+    });
+
+  // ======================================================
+  // NOMBRE: Construir instalación en un sistema
+  // ENTRADA: { partidaId, sistemaId, tipo }
+  // SALIDA: instalación agregada, recursos descontados, galaxia_update emitido
+  // RESTRICCIONES:
+  // - La partida debe estar en estado "jugando"
+  // - Validaciones delegadas a construccion.js
+  // OBJETIVO:
+  // Recibir solicitud de construcción y coordinar respuesta a clientes
+  // ======================================================
+    socket.on("build", ({ partidaId, sistemaId, tipo }) => {
+        const partida = partidas[partidaId];
+        if (!partida || partida.estado !== "jugando") return;
+
+        const resultado = construir(partida, socket.id, sistemaId, tipo);
+
+        if (!resultado.ok) {
+            socket.emit("error_build", { mensaje: resultado.error });
+            return;
+        }
+
+        io.to(partidaId).emit("galaxia_update", partida.galaxia);
+        socket.emit("recursos_update", resultado.jugador.recursos);
     });
 
   // ======================================================
