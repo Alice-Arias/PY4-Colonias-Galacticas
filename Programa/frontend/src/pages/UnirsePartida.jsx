@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import socket from "../services/socket";
 import backgroundLogin from "../assets/backgroundLogin.jpeg";
+import LobbyPlayersPanel from "../components/LobbyPlayersPanel";
 
 import { PiDiamondsFourLight } from "react-icons/pi";
 
@@ -95,50 +96,7 @@ export default function UnirsePartida() {
                     </div>
 
                     {/* Panel derecho */}
-                    <div className="unirse-players-panel">
-                        <div className="unirse-players-header">
-                            <span className="unirse-players-title">
-                                Jugadores en sala
-                            </span>
-                            {lobby && (
-                                <span className="unirse-players-count">
-                                    {lobby.jugadores.length} jugadores
-                                </span>
-                            )}
-                        </div>
-
-                        {lobby ? (
-                            <>
-                                {lobby.jugadores.map((j) => (
-                                    <div className="unirse-players-list">
-                                      {lobby.jugadores.map((j) => (
-                                          <div className="unirse-player-row" key={j.id}>
-                                              <div className="unirse-player-avatar">
-                                                  {getInitials(j.nickname)}
-                                              </div>
-                                              <span className="unirse-player-name">{j.nickname}</span>
-                                              <span className={`unirse-player-status ${j.ready ? "unirse-status-ready" : "unirse-status-waiting"}`}>
-                                                  {j.ready ? "● Listo" : "◌ Esperando"}
-                                              </span>
-                                          </div>
-                                      ))}
-                                  </div>
-                                ))}
-
-                                <div className="unirse-estado-bar">
-                                    <div className="unirse-estado-dot"></div>
-                                    <span className="unirse-estado-text">
-                                        Estado: <strong>{lobby.estado}</strong>
-                                    </span>
-                                </div>
-                            </>
-                        ) : (
-                            <div className="unirse-empty-state">
-                                <div className="unirse-empty-icon"><PiDiamondsFourLight /></div>
-                                <p>Ingresá un ID para unirte a una sala</p>
-                            </div>
-                        )}
-                    </div>
+                    <LobbyPlayersPanel lobby={lobby} />
                 </div>
             </div>
         </div>
