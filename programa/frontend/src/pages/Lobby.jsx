@@ -6,16 +6,17 @@ import socket from "../services/socket";
 import LobbyPlayersPanel from "../components/LobbyPlayersPanel";
 
 function Lobby() {
-    const fxRef    = useRef(null);
+    const fxRef = useRef(null);
     const navigate = useNavigate();
     const location = useLocation();
 
     const [countdown, setCountdown] = useState(null); //Para el contador de inicio de partida
+    const [mensajeFinal, setMensajeFinal] = useState(false);
 
     const [lobby, setLobby] = useState(location.state?.lobbyInicial || null);
 
     const partidaId = location.state?.partidaId;
-    const isHost    = location.state?.isHost ?? false;
+    const isHost = location.state?.isHost ?? false;
 
     useEffect(() => {
         const el = fxRef.current;
@@ -37,7 +38,14 @@ function Lobby() {
 
     useEffect(() => {
         const handleLobbyUpdate = (data) => setLobby(data);
-        const handleGameStarted = () => navigate("/partida");
+        const handleGameStarted = () => {
+            setCountdown(null);
+            setMensajeFinal(true);
+
+            setTimeout(() => {
+                navigate("/partida");
+            }, 2500);
+        };
 
         socket.on("lobby_update", handleLobbyUpdate);
         socket.on("game_started", handleGameStarted);
@@ -55,9 +63,6 @@ function Lobby() {
     useEffect(() => {
         const handleCountdown = (segundos) => {
             setCountdown(segundos);
-            if (segundos === 0) {
-                setTimeout(() => setCountdown(null), 800);
-            }
         };
 
         socket.on("countdown", handleCountdown);
@@ -76,33 +81,41 @@ function Lobby() {
 
             <div className="lobby-overlay">
                 <div className="lobby-card">
-
                     <div className="lobby-header">
-                        <span className="lobby-eyebrow">◆ Conflicto Interestelar ◆</span>
+                        <span className="lobby-eyebrow">
+                            ◆ Conflicto Interestelar ◆
+                        </span>
                         <h1 className="lobby-title">Lobby de Partida</h1>
                     </div>
 
-                    <LobbyPlayersPanel
-                        lobby={lobby}
-                        partidaId={partidaId}
-                    />
+                    <LobbyPlayersPanel lobby={lobby} partidaId={partidaId} />
 
                     <div className="lobby-actions">
                         {isHost && (
-                            <button className="lobby-primary-btn" onClick={iniciarPartida}>
+                            <button
+                                className="lobby-primary-btn"
+                                onClick={iniciarPartida}
+                            >
                                 Iniciar Partida
                             </button>
                         )}
-                        <button className="lobby-secondary-btn" onClick={() => navigate("/")}>
+                        <button
+                            className="lobby-secondary-btn"
+                            onClick={() => navigate("/")}
+                        >
                             Volver al inicio
                         </button>
                     </div>
-
                 </div>
             </div>
             {countdown !== null && (
                 <div className="lobby-countdown">
-                    {countdown}
+                    <span key={countdown}>{countdown}</span>
+                </div>
+            )}
+            {mensajeFinal && (
+                <div className="lobby-countdown">
+                    <span className="lobby-mensaje-final">¡QUE COMIENCE<br/>LA CONQUISTA!</span>
                 </div>
             )}
         </div>
