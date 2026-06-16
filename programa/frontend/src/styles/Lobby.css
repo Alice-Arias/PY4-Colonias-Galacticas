@@ -107,7 +107,7 @@
 /* Card con altura fija */
 .lobby-card {
     width: min(560px, 96vw);
-    height: min(600px, 88vh);
+    height: min(700px, 92vh);
     background: rgba(3, 14, 32, 0.92);
     border: 1px solid rgba(0, 210, 255, 0.38);
     border-radius: 12px;
@@ -531,9 +531,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
-    margin: 0.8rem 0 1.2rem;
-    padding: 1rem;
+    margin: 0.1rem 0 1rem;
+    padding: 0.5rem;
     background: rgba(0, 212, 255, 0.10);
     border: 1px solid rgba(0, 212, 255, 0.30);
     border-radius: 8px;
