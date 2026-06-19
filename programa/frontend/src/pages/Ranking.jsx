@@ -1,3 +1,10 @@
+// ==============================================================================================
+// NOMBRE: Ranking
+// ENTRADA: datos agregados de partidas y jugadores
+// SALIDA: clasificación visible para el usuario
+// RESTRICCIONES: ordenar y mostrar puntajes sin alterar el historial
+// OBJETIVO: presentar el ranking de partidas y jugadores
+// ==============================================================================================
 import "../styles/Ranking.css";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -6,9 +13,15 @@ import { formatearTiempo } from "../utils/transformadores";
 import api from "../services/api";
 import { obtenerInfoTematica } from "../utils/tematicas";
 
-const POS_CLASS = { 0: "pos-1", 1: "pos-2", 2: "pos-3" };
 const ROW_CLASS = { 0: "top-1", 1: "top-2", 2: "top-3" };
 
+// ==============================================================================================
+// NOMBRE: Ranking
+// ENTRADA: historial de resultados de partidas
+// SALIDA: tabla ordenada de puntajes y desempeño
+// RESTRICCIONES: lectura únicamente
+// OBJETIVO: mostrar clasificación histórica
+// ==============================================================================================
 export default function Ranking() {
     const navigate = useNavigate();
     const location = useLocation();

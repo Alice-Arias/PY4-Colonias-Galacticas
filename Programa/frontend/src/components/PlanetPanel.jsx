@@ -1,6 +1,20 @@
+// ==============================================================================================
+// NOMBRE: PlanetPanel
+// ENTRADA: planeta seleccionado y callbacks de acción
+// SALIDA: panel lateral con detalle del sistema
+// RESTRICCIONES: respetar permisos y estado del planeta
+// OBJETIVO: mostrar el detalle y acciones del sistema seleccionado
+// ==============================================================================================
 import "../styles/PlanetPanel.css";
 
-export default function PlanetPanel({ planeta, esBaseInicial = false, esPropio = false, onBuild, onSendFleet, onDetails, ultimoSync }) {
+// ==============================================================================================
+// NOMBRE: PlanetPanel
+// ENTRADA: sistema seleccionado y acciones disponibles
+// SALIDA: detalle del planeta y botones de acción
+// RESTRICCIONES: respeta permisos de propietario
+// OBJETIVO: gestionar interacción contextual del sistema activo
+// ==============================================================================================
+export default function PlanetPanel({ planeta, esBaseInicial = false, esPropio = false, onBuild, onSendFleet, onDetails }) {
     if (!planeta) {
         return (
             <div className="planet-panel">
@@ -91,8 +105,8 @@ export default function PlanetPanel({ planeta, esBaseInicial = false, esPropio =
                     <button
                         className="btn btn-fleet"
                         onClick={onSendFleet}
-                        title="Enviar flota"
-                        disabled={!esPropio}
+                        title={!esPropio ? "Solo puedes enviar desde tus sistemas" : (flotas || 0) === 0 ? "Sin flotas disponibles" : "Enviar flota"}
+                        disabled={!esPropio || (flotas || 0) === 0}
                     >
                         ENVIAR FLOTA
                     </button>

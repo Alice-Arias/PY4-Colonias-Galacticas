@@ -1,7 +1,21 @@
+// ==============================================================================================
+// NOMBRE: GalaxyMap
+// ENTRADA: estado del mapa, selección y animaciones visuales
+// SALIDA: representación interactiva del mapa galáctico
+// RESTRICCIONES: mantener sincronía con el estado del juego y los sockets
+// OBJETIVO: dibujar el mapa galáctico y la interacción visual
+// ==============================================================================================
 import { useEffect, useMemo, useRef, useState } from "react";
 import "../styles/GalaxyMap.css";
 import neutralGalaxyBg from "../assets/backgroundLogin.jpeg";
 
+// ==============================================================================================
+// NOMBRE: GalaxyMap
+// ENTRADA: sistemas, selección y eventos de interacción
+// SALIDA: mapa renderizado en canvas
+// RESTRICCIONES: depende de dimensiones del contenedor
+// OBJETIVO: visualizar territorio, rutas y movimientos
+// ==============================================================================================
 export default function GalaxyMap({ sistemas = [], onPlanetSelect, selectedId = null, baseId = null, playerId = null, playerName = null, movimientoVisual = null }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
@@ -354,8 +368,15 @@ export default function GalaxyMap({ sistemas = [], onPlanetSelect, selectedId = 
       ctx.textBaseline = "middle";
       ctx.fillText(sistema.nombre, pos.x, pos.y + ringRadius + 18);
     });
-  }, [baseId, positions, selectedId, sistemas, playerId, graphStateToken, movimientoVisual, animTick]);
+  }, [baseId, positions, selectedId, sistemas, playerId, playerName, graphStateToken, movimientoVisual, animTick]);
 
+  // ==============================================================================================
+  // NOMBRE: handleCanvasClick
+  // ENTRADA: evento click del canvas
+  // SALIDA: notifica planeta seleccionado cuando corresponde
+  // RESTRICCIONES: requiere coordenadas y mapa de posiciones
+  // OBJETIVO: traducir clics de usuario a selección de sistema
+  // ==============================================================================================
   const handleCanvasClick = (e) => {
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();

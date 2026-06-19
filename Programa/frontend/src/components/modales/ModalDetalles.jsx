@@ -6,6 +6,13 @@
 // OBJETIVO: mostrar información completa de un sistema al hacer clic
 // ======================================================
 
+// ==============================================================================================
+// NOMBRE: ModalDetalles
+// ENTRADA: planeta seleccionado y callback de cierre
+// SALIDA: modal con información extendida del sistema
+// RESTRICCIONES: renderiza vacío si planeta no existe
+// OBJETIVO: ampliar detalle estratégico de un planeta
+// ==============================================================================================
 export default function ModalDetalles({ planeta, onCerrar }) {
     if (!planeta) return null;
 

@@ -6,6 +6,13 @@
 // OBJETIVO: notificar a los jugadores sobre combates en tiempo real
 // ======================================================
 
+// ==============================================================================================
+// NOMBRE: ModalBatalla
+// ENTRADA: datos del evento de batalla y callback de cierre
+// SALIDA: modal informativo de combate
+// RESTRICCIONES: requiere evento válido para render útil
+// OBJETIVO: mostrar resolución de enfrentamientos
+// ==============================================================================================
 export default function ModalBatalla({ eventoBatalla, onCerrar }) {
     if (!eventoBatalla) return null;
 

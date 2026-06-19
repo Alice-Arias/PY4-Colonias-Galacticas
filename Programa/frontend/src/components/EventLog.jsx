@@ -1,8 +1,29 @@
+// ==============================================================================================
+// NOMBRE: EventLog
+// ENTRADA: lista de eventos recientes emitidos por la partida
+// SALIDA: historial visual de acciones y mensajes
+// RESTRICCIONES: mantener el orden temporal y limitar ruido visual
+// OBJETIVO: mostrar el historial reciente de eventos del juego
+// ==============================================================================================
 import { useEffect, useRef } from "react";
 import "../styles/EventLog.css";
 
+// ==============================================================================================
+// NOMBRE: EventLog
+// ENTRADA: lista de eventos y opciones de visualización
+// SALIDA: panel de historial cronológico
+// RESTRICCIONES: ordena por timestamp de llegada
+// OBJETIVO: mostrar actividad reciente del juego
+// ==============================================================================================
 export default function EventLog({ eventos = [], title = "EVENTOS", compact = false }) {
     const logsEndRef = useRef(null);
+    // ==============================================================================================
+    // NOMBRE: getEventLabel
+    // ENTRADA: tipo de evento
+    // SALIDA: etiqueta legible para UI
+    // RESTRICCIONES: usa fallback para tipos desconocidos
+    // OBJETIVO: estandarizar nombres visuales del log
+    // ==============================================================================================
     const getEventLabel = (tipo) => {
         const labels = {
             owner_change: "CAMBIO DE DUEÑO",

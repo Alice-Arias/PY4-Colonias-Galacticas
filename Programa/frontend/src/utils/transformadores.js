@@ -12,6 +12,13 @@
 // RESTRICCIONES: segundos debe ser un número positivo
 // OBJETIVO: convertir segundos a formato legible para el temporizador
 // ======================================================
+// ==============================================================================================
+// NOMBRE: formatearTiempo
+// ENTRADA: segundos numéricos
+// SALIDA: tiempo en formato mm:ss
+// RESTRICCIONES: normaliza entrada inválida a cero
+// OBJETIVO: mostrar temporizadores legibles en UI
+// ==============================================================================================
 export function formatearTiempo(segundos) {
     const total = Math.max(0, Math.floor(Number(segundos) || 0));
     const min = Math.floor(total / 60);
@@ -26,6 +33,13 @@ export function formatearTiempo(segundos) {
 // RESTRICCIONES: estado debe contener galaxia con sistemas y rutas
 // OBJETIVO: adaptar el estado del servidor al formato que necesita GalaxyMap
 // ======================================================
+// ==============================================================================================
+// NOMBRE: transformarEstadoServidor
+// ENTRADA: estado recibido desde backend
+// SALIDA: estado adaptado al modelo del frontend
+// RESTRICCIONES: maneja nulos y estructuras parciales
+// OBJETIVO: unificar el shape de estado para render
+// ==============================================================================================
 export function transformarEstadoServidor(estado) {
     const galaxia = estado?.galaxia || {};
     return (galaxia.sistemas || []).map((sistema) => ({
@@ -57,6 +71,13 @@ export function transformarEstadoServidor(estado) {
 // RESTRICCIONES: busca primero por socketId, luego por nickname
 // OBJETIVO: obtener el estado del jugador actual de forma segura
 // ======================================================
+// ==============================================================================================
+// NOMBRE: getPlayerState
+// ENTRADA: estado global, playerName y playerSocketId
+// SALIDA: snapshot del jugador actual
+// RESTRICCIONES: requiere estado transformado previamente
+// OBJETIVO: extraer datos del jugador activo
+// ==============================================================================================
 export function getPlayerState(estado, playerName, playerSocketId) {
     const jugadores = estado?.jugadores || [];
     const porSocket = jugadores.find((item) => item.socketId === playerSocketId);
@@ -76,6 +97,13 @@ export function getPlayerState(estado, playerName, playerSocketId) {
 // RESTRICCIONES: sistema debe existir
 // OBJETIVO: preparar la información del sistema para mostrar en el panel lateral
 // ======================================================
+// ==============================================================================================
+// NOMBRE: inferSelectedDetails
+// ENTRADA: sistema seleccionado y estado del jugador
+// SALIDA: metadatos de selección para UI
+// RESTRICCIONES: soporta sistemas nulos
+// OBJETIVO: derivar contexto del planeta activo
+// ==============================================================================================
 export function inferSelectedDetails(sistema, playerState) {
     if (!sistema) return null;
 

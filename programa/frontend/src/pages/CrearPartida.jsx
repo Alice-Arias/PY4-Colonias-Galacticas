@@ -1,3 +1,10 @@
+// ==============================================================================================
+// NOMBRE: CrearPartida
+// ENTRADA: configuración inicial de sala, tiempos y temática
+// SALIDA: creación de una nueva partida en el servidor
+// RESTRICCIONES: validar recursos, tiempos y conexión antes de crear
+// OBJETIVO: permitir configurar y crear una nueva partida
+// ==============================================================================================
 import "../styles/CrearPartida.css";
 import { useState, useEffect, useRef } from "react";
 import socket from "../services/socket";
@@ -19,6 +26,13 @@ const RECURSOS = {
 
 const getStoredNickname = () => sessionStorage.getItem("nickname") || localStorage.getItem("nickname") || "";
 
+// ==============================================================================================
+// NOMBRE: CrearPartida
+// ENTRADA: interacción de formulario del usuario
+// SALIDA: solicitud de creación de sala
+// RESTRICCIONES: valida nombre, tiempos y recursos
+// OBJETIVO: crear una partida nueva desde la UI
+// ==============================================================================================
 export default function CrearPartida() {
     const navigate = useNavigate();
     const fxRef = useRef(null);
@@ -27,7 +41,7 @@ export default function CrearPartida() {
     const [galaxia, setGalaxia] = useState("Nebulosa Orion");
     const [galaxias, setGalaxias] = useState([]);
     const [maxJugadores, setMaxJugadores] = useState(2);
-    const [tiempoMax, setTiempoMax] = useState(300);
+    const [tiempoMax, setTiempoMax] = useState(1800);
     const [tiempoEspera, setTiempoEspera] = useState(60);
     const [porcentajeVictoria, setPorcentajeVictoria] = useState(60);
     const [nivelRecursos, setNivelRecursos] = useState("normal");
@@ -110,11 +124,14 @@ export default function CrearPartida() {
             localStorage.setItem("partidaId", partida.id);
             sessionStorage.setItem("partidaTematica", partida.tematica || tematica);
             localStorage.setItem("partidaTematica", partida.tematica || tematica);
+            sessionStorage.setItem("partidaLobbyInicial", JSON.stringify(partida));
+            localStorage.setItem("partidaLobbyInicial", JSON.stringify(partida));
             navigate("/lobby", {
                 state: {
                     partidaId: partida.id,
                     isHost: true,
                     tematica: partida.tematica || tematica,
+                    lobbyInicial: partida,
                 },
             });
         });
@@ -230,7 +247,7 @@ export default function CrearPartida() {
                             </p>
                             <div className="crear-form-group">
                                 <label htmlFor="tiempoMax">
-                                    Duración de la partida (seg)
+                                    Duración real de la partida (seg)
                                 </label>
                                 <input
                                     id="tiempoMax"
@@ -241,10 +258,13 @@ export default function CrearPartida() {
                                         setTiempoMax(e.target.value)
                                     }
                                 />
+                                <small className="form-help-text">
+                                    Este tiempo es el que importa dentro del juego.
+                                </small>
                             </div>
                             <div className="crear-form-group">
                                 <label htmlFor="tiempoEspera">
-                                    Tiempo de espera (seg)
+                                    Tiempo de espera del lobby (seg)
                                 </label>
                                 <input
                                     id="tiempoEspera"
@@ -255,6 +275,9 @@ export default function CrearPartida() {
                                         setTiempoEspera(e.target.value)
                                     }
                                 />
+                                <small className="form-help-text">
+                                    Solo controla cuánto tiempo hay para reunir jugadores.
+                                </small>
                             </div>
                             <div className="crear-form-group">
                                 <label htmlFor="porcentajeVictoria">

@@ -1,3 +1,10 @@
+// ==============================================================================================
+// NOMBRE: UnirsePartida
+// ENTRADA: código de partida y datos del jugador
+// SALIDA: acceso a una partida existente
+// RESTRICCIONES: validar código, nickname y disponibilidad de la sala
+// OBJETIVO: permitir unirse a una partida existente mediante código
+// ==============================================================================================
 import "../styles/UnirsePartida.css";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -7,6 +14,13 @@ import "../components/LobbyPlayersPanel";
 
 const getStoredNickname = () => sessionStorage.getItem("nickname") || localStorage.getItem("nickname") || "";
 
+// ==============================================================================================
+// NOMBRE: UnirsePartida
+// ENTRADA: código de sala y nickname del usuario
+// SALIDA: unión a partida existente
+// RESTRICCIONES: requiere sala disponible
+// OBJETIVO: conectar al jugador con una partida activa
+// ==============================================================================================
 export default function UnirsePartida() {
     const navigate = useNavigate();
     const fxRef = useRef(null);

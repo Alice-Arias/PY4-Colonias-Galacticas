@@ -10,6 +10,13 @@ import { useNavigate } from "react-router-dom";
 import { formatearTiempo } from "../../utils/transformadores";
 import { obtenerInfoTematica } from "../../utils/tematicas";
 
+// ==============================================================================================
+// NOMBRE: ModalEstadisticasPartida
+// ENTRADA: resumen final y callback de cierre
+// SALIDA: modal de estadísticas finales
+// RESTRICCIONES: requiere resumen de partida válido
+// OBJETIVO: presentar métricas de cierre al jugador
+// ==============================================================================================
 export default function ModalEstadisticasPartida({ resumenPartida, onCerrar }) {
     const navigate = useNavigate();
 

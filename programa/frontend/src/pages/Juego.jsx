@@ -22,6 +22,13 @@ import ModalEstadisticasPartida from "../components/modales/ModalEstadisticasPar
 import { obtenerInfoTematica } from "../utils/tematicas";
 import "../styles/Juego.css";
 
+// ==============================================================================================
+// NOMBRE: Juego
+// ENTRADA: contexto de partida activa
+// SALIDA: composición de paneles y modales de juego
+// RESTRICCIONES: requiere estado generado por useJuego
+// OBJETIVO: renderizar la pantalla principal de conquista
+// ==============================================================================================
 export default function Juego() {
     const playerName = sessionStorage.getItem("nickname") || localStorage.getItem("nickname") || "Jugador";
     const location = useLocation();
@@ -34,7 +41,6 @@ export default function Juego() {
         // Estado
         estado,
         mensajeInicio,
-        countdown,
         sistemas,
         recursos,
         flotas,
@@ -59,7 +65,6 @@ export default function Juego() {
         eventosVisibles,
         ultimoSync,
         movimientoVisual,
-        ordenFlotaPendiente,
         // Modales
         modalConstruir,
         modalFlota,
@@ -225,7 +230,6 @@ export default function Juego() {
                 onChangeCantidad={(cantidad) => setFormFlota((prev) => ({ ...prev, cantidad }))}
                 onEnviar={enviarFlotas}
                 onAtacar={enviarAtaque}
-                ordenPendiente={ordenFlotaPendiente}
                 onCerrar={() => setModalFlota(false)}
             />
 

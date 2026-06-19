@@ -9,6 +9,13 @@
 import { useEffect, useRef } from "react";
 import socket from "../services/socket";
 
+// ==============================================================================================
+// NOMBRE: useSocket
+// ENTRADA: ids de partida/jugador y callbacks de eventos
+// SALIDA: API de emisión y sincronización por socket
+// RESTRICCIONES: requiere conexión activa con servidor
+// OBJETIVO: centralizar listeners y emisores de tiempo real
+// ==============================================================================================
 export function useSocket({
     partidaId,
     playerName,
@@ -29,6 +36,59 @@ export function useSocket({
     setPlayerSocketId,
 }) {
     const temporizadorModalBatallaRef = useRef(null);
+    const callbacksRef = useRef({
+        onGameStarted,
+        onGameState,
+        onCountdown,
+        onProductionTimer,
+        onCountdownInicioU,
+        onInicioUCompletado,
+        onInicioUResultado,
+        onBattleStart,
+        onBattleResult,
+        onGameOver,
+        onConstruirResultado,
+        onFlotasResultado,
+        onAtaqueResultado,
+        onSistemaConquistado,
+        setPlayerSocketId,
+    });
+
+    useEffect(() => {
+        callbacksRef.current = {
+            onGameStarted,
+            onGameState,
+            onCountdown,
+            onProductionTimer,
+            onCountdownInicioU,
+            onInicioUCompletado,
+            onInicioUResultado,
+            onBattleStart,
+            onBattleResult,
+            onGameOver,
+            onConstruirResultado,
+            onFlotasResultado,
+            onAtaqueResultado,
+            onSistemaConquistado,
+            setPlayerSocketId,
+        };
+    }, [
+        onGameStarted,
+        onGameState,
+        onCountdown,
+        onProductionTimer,
+        onCountdownInicioU,
+        onInicioUCompletado,
+        onInicioUResultado,
+        onBattleStart,
+        onBattleResult,
+        onGameOver,
+        onConstruirResultado,
+        onFlotasResultado,
+        onAtaqueResultado,
+        onSistemaConquistado,
+        setPlayerSocketId,
+    ]);
 
     // ======================================================
     // NOMBRE: efecto principal de sockets
@@ -41,47 +101,47 @@ export function useSocket({
         if (!partidaId) return;
 
         const handleConnect = () => {
-            setPlayerSocketId(socket.id || null);
+            callbacksRef.current.setPlayerSocketId?.(socket.id || null);
             socket.emit("join_game", { partidaId, nickname: playerName });
         };
 
         const handleGameStarted = (payload) => {
-            onGameStarted(payload);
+            callbacksRef.current.onGameStarted?.(payload);
         };
 
         const handleGameState = (payload) => {
-            onGameState(payload);
+            callbacksRef.current.onGameState?.(payload);
         };
 
         const handleCountdown = (segundos) => {
-            onCountdown(segundos);
+            callbacksRef.current.onCountdown?.(segundos);
         };
 
         const handleProductionTimer = ({ segundosRestantes }) => {
             if (typeof segundosRestantes === "number") {
-                onProductionTimer(segundosRestantes);
+                callbacksRef.current.onProductionTimer?.(segundosRestantes);
             }
         };
 
         const handleCountdownInicioU = ({ segundosRestantes }) => {
-            onCountdownInicioU(segundosRestantes);
+            callbacksRef.current.onCountdownInicioU?.(segundosRestantes);
         };
 
         const handleInicioUCompletado = () => {
-            onInicioUCompletado();
+            callbacksRef.current.onInicioUCompletado?.();
         };
 
         const handleInicioUResultado = (resultado) => {
-            onInicioUResultado(resultado);
+            callbacksRef.current.onInicioUResultado?.(resultado);
         };
 
         const handleBattleStart = (data) => {
             if (temporizadorModalBatallaRef.current) {
                 clearTimeout(temporizadorModalBatallaRef.current);
             }
-            onBattleStart(data);
+            callbacksRef.current.onBattleStart?.(data);
             temporizadorModalBatallaRef.current = setTimeout(() => {
-                onBattleStart(null);
+                callbacksRef.current.onBattleStart?.(null);
             }, 3500);
         };
 
@@ -90,11 +150,10 @@ export function useSocket({
                 clearTimeout(temporizadorModalBatallaRef.current);
                 temporizadorModalBatallaRef.current = null;
             }
-            onBattleResult(data);
+            callbacksRef.current.onBattleResult?.(data);
 
-            // Cerrar automáticamente el modal de resultado para evitar overlay oscuro persistente.
             temporizadorModalBatallaRef.current = setTimeout(() => {
-                onBattleStart(null);
+                callbacksRef.current.onBattleStart?.(null);
                 temporizadorModalBatallaRef.current = null;
             }, 3500);
         };
@@ -103,7 +162,7 @@ export function useSocket({
             if (temporizadorModalBatallaRef.current) {
                 clearTimeout(temporizadorModalBatallaRef.current);
             }
-            onBattleStart({
+            callbacksRef.current.onBattleStart?.({
                 tipo: "inicio",
                 atacante: data.atacante,
                 defensor: playerName,
@@ -112,38 +171,35 @@ export function useSocket({
                 defensa: data.defensa,
             });
             temporizadorModalBatallaRef.current = setTimeout(() => {
-                onBattleStart(null);
+                callbacksRef.current.onBattleStart?.(null);
             }, 3500);
         };
 
         const handleGameOver = (data) => {
-            onGameOver(data);
+            callbacksRef.current.onGameOver?.(data);
         };
 
         const handleJugadorEliminado = (data) => {
-            // Notificar que un jugador fue eliminado
-            if (onBattleResult) {
-                onBattleResult({
-                    atacante: "Sistema",
-                    defensor: data.nickname,
-                    ganador: "Sistema",
-                    mensaje: `${data.nickname} ha sido eliminado del juego`,
-                });
-            }
+            callbacksRef.current.onBattleResult?.({
+                atacante: "Sistema",
+                defensor: data.nickname,
+                ganador: "Sistema",
+                mensaje: `${data.nickname} ha sido eliminado del juego`,
+            });
         };
 
         const handleConstruirResultado = (resultado) => {
-            onConstruirResultado(resultado);
+            callbacksRef.current.onConstruirResultado?.(resultado);
             socket.emit("get_game_state", partidaId);
         };
 
         const handleFlotasResultado = (resultado) => {
-            onFlotasResultado(resultado);
+            callbacksRef.current.onFlotasResultado?.(resultado);
             socket.emit("get_game_state", partidaId);
         };
 
         const handleAtaqueResultado = (resultado) => {
-            onAtaqueResultado(resultado);
+            callbacksRef.current.onAtaqueResultado?.(resultado);
             socket.emit("get_game_state", partidaId);
         };
 
@@ -152,13 +208,13 @@ export function useSocket({
                 clearTimeout(temporizadorModalBatallaRef.current);
                 temporizadorModalBatallaRef.current = null;
             }
-            onBattleResult(data?.resultado);
+            callbacksRef.current.onBattleResult?.(data?.resultado);
             socket.emit("get_game_state", partidaId);
         };
 
         const handleSistemaConquistado = (data) => {
-            if (onSistemaConquistado) {
-                onSistemaConquistado(data);
+            if (callbacksRef.current.onSistemaConquistado) {
+                callbacksRef.current.onSistemaConquistado(data);
             }
             socket.emit("get_game_state", partidaId);
         };
@@ -184,7 +240,7 @@ export function useSocket({
         socket.on("sistema_conquistado", handleSistemaConquistado);
 
         // Conectar al entrar
-        setPlayerSocketId(socket.id || null);
+        callbacksRef.current.setPlayerSocketId?.(socket.id || null);
         socket.emit("join_game", { partidaId, nickname: playerName });
         socket.emit("get_game_state", partidaId);
 

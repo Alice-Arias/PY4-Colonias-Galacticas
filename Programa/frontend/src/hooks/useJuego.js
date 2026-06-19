@@ -6,7 +6,7 @@
 // OBJETIVO: centralizar todo el estado y lógica del componente Juego
 // ======================================================
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSocket } from "./useSocket";
 import {
     transformarEstadoServidor,
@@ -14,16 +14,22 @@ import {
     inferSelectedDetails,
 } from "../utils/transformadores";
 import { getCostoConstruccion } from "../utils/construccion";
-import { calcularCostoMovimiento } from "../utils/flotas";
+import { ahoraMonotonoMs } from "../utils/reloj";
 
+// ==============================================================================================
+// NOMBRE: useJuego
+// ENTRADA: partidaId y playerName
+// SALIDA: estado y acciones de la vista de juego
+// RESTRICCIONES: depende de eventos recibidos por socket
+// OBJETIVO: encapsular la lógica de estado de la partida
+// ==============================================================================================
 export function useJuego(partidaId, playerName) {
     const [estadoServidor, setEstadoServidor]         = useState(null);
     const [estado, setEstado]                         = useState("conectando");
     const [mensajeInicio, setMensajeInicio]           = useState("Conectando a la partida...");
     const [countdown, setCountdown]                   = useState(null);
-    const [inicioPartida, setInicioPartida]           = useState(null);
     const [partidaTimer, setPartidaTimer]             = useState(0);
-    const [seleccionado, setSeleccionado]             = useState(null);
+    const [selectedId, setSelectedId]                 = useState(null);
     const [modalConstruir, setModalConstruir]         = useState(false);
     const [modalFlota, setModalFlota]                 = useState(false);
     const [modalDetalles, setModalDetalles]           = useState(false);
@@ -43,20 +49,22 @@ export function useJuego(partidaId, playerName) {
     const [ultimoSync, setUltimoSync]                 = useState(null);
     const [movimientoVisual, setMovimientoVisual]     = useState(null);
     const [jugadorSnapshot, setJugadorSnapshot]       = useState(null);
-    const [ordenFlotaPendiente, setOrdenFlotaPendiente] = useState(false);
     const puntajePrevioRef = useRef(null);
     const accionFlotaPendienteRef = useRef(null);
-    const ordenFlotaTimeoutRef = useRef(null);
-    const ordenFlotaEnviadaAtRef = useRef(null);
 
-    const marcarSync = () => setUltimoSync(Date.now());
+    const marcarSync = useCallback(() => setUltimoSync(Date.now()), []);
 
-    const agregarEventoLocal = (evento) => {
+    const sincronizarJugadorSnapshot = useCallback((estado) => {
+        const jugadorActual = getPlayerState(estado, playerName, playerSocketId);
+        setJugadorSnapshot(jugadorActual ? JSON.parse(JSON.stringify(jugadorActual)) : null);
+    }, [playerName, playerSocketId]);
+
+    const agregarEventoLocal = useCallback((evento) => {
         if (!evento) return;
         setEventos((prev) => [evento, ...(prev || [])].slice(0, 25));
-    };
+    }, []);
 
-    const aplicarEstadoOptimista = (mutador) => {
+    const aplicarEstadoOptimista = useCallback((mutador) => {
         let siguienteEstado = null;
 
         setEstadoServidor((prev) => {
@@ -69,8 +77,9 @@ export function useJuego(partidaId, playerName) {
 
         if (siguienteEstado) {
             setSistemas(transformarEstadoServidor(siguienteEstado));
+            sincronizarJugadorSnapshot(siguienteEstado);
         }
-    };
+    }, [sincronizarJugadorSnapshot]);
 
     // ======================================================
     // NOMBRE: callbacks de socket
@@ -79,21 +88,22 @@ export function useJuego(partidaId, playerName) {
     // RESTRICCIONES: cada callback maneja un evento específico
     // OBJETIVO: separar el manejo de cada evento del servidor
     // ======================================================
-    const onGameStarted = (payload) => {
+    const onGameStarted = useCallback((payload) => {
         marcarSync();
         setEstado("activo");
         setMensajeInicio("Partida cargada. Presiona U para iniciar");
-        setInicioPartida((prev) => prev ?? Date.now());
         if (payload?.estadoJuego) {
             setEstadoServidor(payload.estadoJuego);
             setSistemas(transformarEstadoServidor(payload.estadoJuego));
             setEventos(payload.estadoJuego.eventos || []);
+            setPartidaTimer(Math.max(0, Math.floor(payload.estadoJuego.tiempoPartidaRestante ?? 0)));
             setProduccionTimer(Math.max(0, Math.floor(payload.estadoJuego.tiempoProduccionRestante ?? 20)));
             setInicioHabilitado(Boolean(payload.estadoJuego.inicioHabilitado));
+            sincronizarJugadorSnapshot(payload.estadoJuego);
         }
-    };
+    }, [marcarSync, sincronizarJugadorSnapshot]);
 
-    const onGameState = (payload) => {
+    const onGameState = useCallback((payload) => {
         marcarSync();
         setEstado((prev) => (prev === "finalizada" ? prev : "activo"));
         setEstadoServidor(payload);
@@ -102,21 +112,11 @@ export function useJuego(partidaId, playerName) {
         if (typeof payload.tiempoProduccionRestante === "number") {
             setProduccionTimer(payload.tiempoProduccionRestante);
         }
+        if (typeof payload.tiempoPartidaRestante === "number") {
+            setPartidaTimer(Math.max(0, Math.floor(payload.tiempoPartidaRestante)));
+        }
         setInicioHabilitado(Boolean(payload.inicioHabilitado));
         if (payload.ganador) setGanador(payload.ganador);
-
-        // Si hubo una orden enviada y llega un estado nuevo del servidor,
-        // liberamos la espera para evitar falsos "sin confirmación".
-        if (ordenFlotaPendiente && ordenFlotaEnviadaAtRef.current) {
-            const elapsed = Date.now() - ordenFlotaEnviadaAtRef.current;
-            if (elapsed > 250) {
-                setOrdenFlotaPendiente(false);
-                if (ordenFlotaTimeoutRef.current) {
-                    clearTimeout(ordenFlotaTimeoutRef.current);
-                    ordenFlotaTimeoutRef.current = null;
-                }
-            }
-        }
 
         const jugadorEnEstado = getPlayerState(payload, playerName, playerSocketId);
         setJugadorSnapshot(jugadorEnEstado || null);
@@ -145,40 +145,40 @@ export function useJuego(partidaId, playerName) {
         }
 
         puntajePrevioRef.current = puntajeActual;
-    };
+    }, [marcarSync, playerName, playerSocketId]);
 
-    const onCountdown = (segundos) => {
+    const onCountdown = useCallback((segundos) => {
         marcarSync();
         setCountdown(segundos);
         setMensajeInicio(`La conquista empieza en ${segundos}`);
         setEstado("countdown");
-    };
+    }, [marcarSync]);
 
-    const onProductionTimer = (segundosRestantes) => {
+    const onProductionTimer = useCallback((segundosRestantes) => {
         marcarSync();
         setProduccionTimer(segundosRestantes);
-    };
+    }, [marcarSync]);
 
-    const onCountdownInicioU = (segundosRestantes) => {
+    const onCountdownInicioU = useCallback((segundosRestantes) => {
         marcarSync();
         setCountdownInicioU(segundosRestantes);
         setAlertaAtaque(`Inicio en ${segundosRestantes}s...`);
-    };
+    }, [marcarSync]);
 
-    const onInicioUCompletado = () => {
+    const onInicioUCompletado = useCallback(() => {
         marcarSync();
         setCountdownInicioU(null);
         setInicioHabilitado(true);
         setAlertaAtaque("Partida activa: ya puedes construir, mover flotas y generar recursos.");
-    };
+    }, [marcarSync]);
 
-    const onInicioUResultado = (resultado) => {
+    const onInicioUResultado = useCallback((resultado) => {
         if (!resultado?.exito) {
             setAlertaAtaque(resultado?.mensaje || "No se pudo iniciar con tecla U.");
         }
-    };
+    }, []);
 
-    const onBattleStart = (data) => {
+    const onBattleStart = useCallback((data) => {
         marcarSync();
         if (!data) {
             setModalBatalla(false);
@@ -189,9 +189,9 @@ export function useJuego(partidaId, playerName) {
         if (data?.defensorId === playerSocketId || data?.defensor === playerName) {
             setAlertaAtaque(`Ataque entrante en ${data.sistemaNombre}: ${data.flotasAtacantes} flotas enemigas.`);
         }
-    };
+    }, [marcarSync, playerSocketId, playerName]);
 
-    const onBattleResult = (data) => {
+    const onBattleResult = useCallback((data) => {
         marcarSync();
         setEventoBatalla({ tipo: "resultado", ...data });
         setModalBatalla(true);
@@ -221,9 +221,9 @@ export function useJuego(partidaId, playerName) {
                 ...prev,
             ]);
         }
-    };
+    }, [marcarSync]);
 
-    const onGameOver = (data) => {
+    const onGameOver = useCallback((data) => {
         marcarSync();
         setGanador(data.ganador);
         setResumenPartida(data);
@@ -234,9 +234,9 @@ export function useJuego(partidaId, playerName) {
             sessionStorage.setItem("ultimaPartidaResumen", JSON.stringify(data));
             localStorage.setItem("ultimaPartidaResumen", JSON.stringify(data));
         }
-    };
+    }, [marcarSync]);
 
-    const onConstruirResultado = (resultado) => {
+    const onConstruirResultado = useCallback((resultado) => {
         marcarSync();
         if (resultado?.exito) {
             setAlertaAtaque(resultado?.mensaje || "Construcción realizada.");
@@ -245,16 +245,10 @@ export function useJuego(partidaId, playerName) {
         }
 
         setAlertaAtaque(resultado?.mensaje || "No se pudo construir en el sistema seleccionado.");
-    };
+    }, [marcarSync]);
 
-    const onFlotasResultado = (resultado) => {
+    const onFlotasResultado = useCallback((resultado) => {
         marcarSync();
-        ordenFlotaEnviadaAtRef.current = null;
-        if (ordenFlotaTimeoutRef.current) {
-            clearTimeout(ordenFlotaTimeoutRef.current);
-            ordenFlotaTimeoutRef.current = null;
-        }
-        setOrdenFlotaPendiente(false);
         if (!resultado?.exito) {
             accionFlotaPendienteRef.current = null;
             setAlertaAtaque(resultado?.mensaje || "No se pudo enviar la flota.");
@@ -263,17 +257,11 @@ export function useJuego(partidaId, playerName) {
 
         const pendiente = accionFlotaPendienteRef.current;
         if (pendiente?.origenId && pendiente?.destinoId) {
-            setMovimientoVisual({
-                origenId: pendiente.origenId,
-                destinoId: pendiente.destinoId,
-                tipo: pendiente.tipo || "movimiento",
-                expiresAt: Date.now() + 1300,
-            });
-
+            // La animación ya se activó en el momento del envío; solo registrar el evento
             agregarEventoLocal({
                 tipo: pendiente.tipo === "ataque" ? "battle_start" : "fleet",
                 hora: new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }),
-                jugador: playerStateNickname || playerName,
+                jugador: playerName,
                 mensaje: pendiente.tipo === "ataque"
                     ? `inició conquista desde ${pendiente.origenNombre} hacia ${pendiente.destinoNombre}`
                     : `envió ${pendiente.cantidad} flotas de ${pendiente.origenNombre} a ${pendiente.destinoNombre}`,
@@ -282,7 +270,6 @@ export function useJuego(partidaId, playerName) {
         }
         accionFlotaPendienteRef.current = null;
 
-        setModalFlota(false);
         if (resultado?.enCombate) {
             setAlertaAtaque(resultado?.mensaje || "Combate iniciado. Esperando resolución...");
         } else if (resultado?.conquistado) {
@@ -290,16 +277,10 @@ export function useJuego(partidaId, playerName) {
         } else {
             setAlertaAtaque(resultado?.mensaje || "Movimiento de flotas enviado.");
         }
-    };
+    }, [marcarSync, agregarEventoLocal, playerName]);
 
-    const onAtaqueResultado = (resultado) => {
+    const onAtaqueResultado = useCallback((resultado) => {
         marcarSync();
-        ordenFlotaEnviadaAtRef.current = null;
-        if (ordenFlotaTimeoutRef.current) {
-            clearTimeout(ordenFlotaTimeoutRef.current);
-            ordenFlotaTimeoutRef.current = null;
-        }
-        setOrdenFlotaPendiente(false);
         if (!resultado?.exito) {
             accionFlotaPendienteRef.current = null;
             setAlertaAtaque(resultado?.mensaje || "No se pudo iniciar la conquista.");
@@ -308,32 +289,21 @@ export function useJuego(partidaId, playerName) {
 
         const pendiente = accionFlotaPendienteRef.current;
         if (pendiente?.origenId && pendiente?.destinoId) {
-            setMovimientoVisual({
-                origenId: pendiente.origenId,
-                destinoId: pendiente.destinoId,
-                tipo: "ataque",
-                expiresAt: Date.now() + 1500,
-            });
-
+            // La animación ya se activó en el momento del envío; solo registrar el evento
             agregarEventoLocal({
                 tipo: "battle_start",
                 hora: new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }),
-                jugador: playerStateNickname || playerName,
+                jugador: playerName,
                 mensaje: `inició conquista hacia ${pendiente.destinoNombre}`,
                 color: "#ffa94d",
             });
         }
         accionFlotaPendienteRef.current = null;
 
-        setModalFlota(false);
         setAlertaAtaque(resultado?.mensaje || "Conquista enviada. Esperando resolución del combate...");
-        
-        // FALLBACK: Si no llega battle_start desde el servidor,
-        // el cliente detectará cambios de estado a través de game_state_update
-        // y mostrará un modal de batalla con los datos actualizados
-    };
+    }, [marcarSync, agregarEventoLocal, playerName]);
 
-    const onSistemaConquistado = (data) => {
+    const onSistemaConquistado = useCallback((data) => {
         marcarSync();
         setAlertaAtaque(
             `Perdiste ${data?.sistemaNombre || "un sistema"}. ${data?.atacante || "Un enemigo"} lo conquistó.`
@@ -377,7 +347,7 @@ export function useJuego(partidaId, playerName) {
             },
             ...(prev || []),
         ].slice(0, 25));
-    };
+    }, [marcarSync, aplicarEstadoOptimista, playerName, playerSocketId]);
 
     // Conectar socket y obtener funciones de emisión
     const { emitirConstruir, emitirEnviarFlotas, emitirAtacar, emitirTeclaU } = useSocket({
@@ -401,20 +371,6 @@ export function useJuego(partidaId, playerName) {
     });
 
     // ======================================================
-    // NOMBRE: efecto de validación de partidaId
-    // ENTRADA: partidaId
-    // SALIDA: estado de error si no hay partidaId
-    // RESTRICCIONES: ninguna
-    // OBJETIVO: detectar partidas inválidas al cargar
-    // ======================================================
-    useEffect(() => {
-        if (!partidaId) {
-            setMensajeInicio("No se encontró el código de partida");
-            setEstado("error");
-        }
-    }, [partidaId]);
-
-    // ======================================================
     // NOMBRE: efecto del temporizador de partida
     // ENTRADA: estado, inicioPartida
     // SALIDA: partidaTimer actualizado cada segundo
@@ -422,15 +378,14 @@ export function useJuego(partidaId, playerName) {
     // OBJETIVO: mostrar el tiempo transcurrido de la partida
     // ======================================================
     useEffect(() => {
-        if (estado !== "activo" || !inicioPartida) {
-            setPartidaTimer(0);
-            return undefined;
-        }
-        const tick = () => setPartidaTimer(Math.floor((Date.now() - inicioPartida) / 1000));
-        tick();
-        const intervalo = setInterval(tick, 1000);
+        if (estado !== "activo") return undefined;
+
+        const intervalo = setInterval(() => {
+            setPartidaTimer((prev) => Math.max(0, prev - 1));
+        }, 1000);
+
         return () => clearInterval(intervalo);
-    }, [estado, inicioPartida]);
+    }, [estado]);
 
     // ======================================================
     // NOMBRE: efecto de sincronización del sistema seleccionado
@@ -443,26 +398,34 @@ export function useJuego(partidaId, playerName) {
     const playerStateNickname = String(playerState?.nickname || playerName || "").trim();
     const playerStateNicknameNormalizado = playerStateNickname.toLowerCase();
     const playerStateSocketId = String(playerState?.socketId || playerSocketId || "").trim();
+    const listaSistemas = useMemo(() => Array.isArray(sistemas) ? sistemas : [], [sistemas]);
     const sistemaInicialId = playerState?.sistemaInicialId || null;
     const sistemaInicial = useMemo(
-        () => sistemas.find((s) => s.id === sistemaInicialId) || null,
-        [sistemaInicialId, sistemas]
+        () => listaSistemas.find((s) => s.id === sistemaInicialId) || null,
+        [sistemaInicialId, listaSistemas]
     );
 
-    useEffect(() => {
-        if (!sistemaInicial) return;
-        if (!seleccionado || !sistemas.some((s) => s.id === seleccionado.id)) {
-            setSeleccionado(sistemaInicial);
-        }
-    }, [seleccionado, sistemaInicial, sistemas]);
+    const sistemaPropioActivo = useMemo(() => {
+        const idsPropios = new Set(playerState?.sistemas || []);
+        if (idsPropios.size === 0) return null;
+        return listaSistemas.find((sistema) => idsPropios.has(sistema.id)) || null;
+    }, [playerState?.sistemas, listaSistemas]);
 
-    useEffect(() => {
-        if (!seleccionado?.id) return;
-        const actualizado = sistemas.find((s) => s.id === seleccionado.id);
-        if (actualizado && actualizado !== seleccionado) {
-            setSeleccionado(actualizado);
+    const sistemaPropioConFlotas = useMemo(() => {
+        const idsPropios = new Set(playerState?.sistemas || []);
+        if (idsPropios.size === 0) return null;
+        return listaSistemas.find((sistema) => idsPropios.has(sistema.id) && Number(sistema.flotas || 0) > 0) || null;
+    }, [playerState?.sistemas, listaSistemas]);
+
+    const seleccionado = useMemo(() => {
+        if (!listaSistemas.length) return null;
+        if (selectedId) {
+            const seleccionadoManual = listaSistemas.find((s) => s.id === selectedId) || null;
+            // Si el usuario eligió un sistema manualmente, mostrarlo siempre
+            if (seleccionadoManual) return seleccionadoManual;
         }
-    }, [sistemas, seleccionado]);
+        return sistemaPropioConFlotas || sistemaPropioActivo || sistemaInicial || null;
+    }, [selectedId, sistemaInicial, sistemaPropioActivo, sistemaPropioConFlotas, listaSistemas]);
 
     // ======================================================
     // ENTRADA: estado, inicioHabilitado, partidaId
@@ -479,31 +442,16 @@ export function useJuego(partidaId, playerName) {
         };
         window.addEventListener("keydown", onKeyDown);
         return () => window.removeEventListener("keydown", onKeyDown);
-    }, [estado, inicioHabilitado, partidaId]);
+    }, [estado, inicioHabilitado, partidaId, emitirTeclaU]);
 
     useEffect(() => {
         if (!movimientoVisual?.expiresAt) return;
-        const restante = Math.max(0, movimientoVisual.expiresAt - Date.now());
+        const restante = Math.max(0, movimientoVisual.expiresAt - ahoraMonotonoMs());
         const timer = setTimeout(() => setMovimientoVisual(null), restante || 1);
         return () => clearTimeout(timer);
     }, [movimientoVisual]);
 
-    useEffect(() => {
-        return () => {
-            if (ordenFlotaTimeoutRef.current) {
-                clearTimeout(ordenFlotaTimeoutRef.current);
-                ordenFlotaTimeoutRef.current = null;
-            }
-            ordenFlotaEnviadaAtRef.current = null;
-        };
-    }, []);
 
-    // Auto-cierre de mensajes de alerta para no saturar la UI.
-    useEffect(() => {
-        if (!alertaAtaque) return;
-        const timer = setTimeout(() => setAlertaAtaque(""), 30000);
-        return () => clearTimeout(timer);
-    }, [alertaAtaque]);
 
     useEffect(() => {
         if (!alertaAtaque) return undefined;
@@ -514,10 +462,9 @@ export function useJuego(partidaId, playerName) {
     // Datos derivados
     const recursos = playerState?.recursos || { minerales: 0, energia: 0, cristales: 0 };
     const flotas = playerState?.flotasEnPie || 0;
-    const tiempoPartidaRestanteServidor = Number(estadoServidor?.tiempoPartidaRestante);
-    const temporizadorPartida = Number.isFinite(tiempoPartidaRestanteServidor) && tiempoPartidaRestanteServidor >= 0
-        ? tiempoPartidaRestanteServidor
-        : (estado === "activo" ? partidaTimer : countdown ?? 0);
+    const temporizadorPartida = estado === "countdown"
+        ? countdown ?? 0
+        : partidaTimer;
     const sistemaControlado = Boolean(
         playerState?.sistemas?.includes(seleccionado?.id)
         || (
@@ -539,12 +486,7 @@ export function useJuego(partidaId, playerName) {
         const ownerName = String(sistema?.propietario || "").trim().toLowerCase();
         return (ownerId && myId && ownerId === myId) || (ownerName && ownerName === playerNameNormalizado);
     });
-    const sistemasControlados = Number(
-        playerState?.sistemasControlados
-        || playerState?.sistemas?.length
-        || sistemasPropiosPorMapa.length
-        || 0
-    );
+    const sistemasControlados = Number(sistemasPropiosPorMapa.length || 0);
     const porcentajeControl = Math.round((sistemasControlados / totalSistemas) * 100);
     const metaVictoriaPorcentaje = Number(estadoServidor?.porcentajeVictoria || 60);
     const metaVictoriaSistemas = Math.max(1, Math.ceil((metaVictoriaPorcentaje / 100) * totalSistemas));
@@ -616,7 +558,7 @@ export function useJuego(partidaId, playerName) {
 
     // Acciones
     const handlePlanetSelect = (sistema) => {
-        setSeleccionado(sistema);
+        setSelectedId(sistema?.id || null);
     };
 
     const abrirDetalles = () => {
@@ -676,12 +618,8 @@ export function useJuego(partidaId, playerName) {
 
     const enviarFlotas = () => {
         if (!seleccionado || !formFlota.destino) return;
-        if (ordenFlotaPendiente) {
-            setAlertaAtaque("Espera: hay una orden de flota en proceso de confirmación.");
-            return;
-        }
         const cantidad = Number(formFlota.cantidad) || 0;
-        const destino = sistemas.find((item) => item.id === formFlota.destino);
+        const destino = listaSistemas.find((item) => item.id === formFlota.destino);
         const esMioPorId = Boolean(playerSocketId && destino?.propietarioId && destino.propietarioId === playerSocketId);
         const esMioPorNombre = Boolean(destino?.propietario && String(destino.propietario).trim().toLowerCase() === String(playerName || "").trim().toLowerCase());
         const destinoEsHostil = Boolean(
@@ -690,41 +628,37 @@ export function useJuego(partidaId, playerName) {
                 || (destino.propietario && !esMioPorNombre)
             )
         );
+        const tipo = destinoEsHostil ? "ataque" : "movimiento";
 
         accionFlotaPendienteRef.current = {
             origenId: seleccionado.id,
             origenNombre: seleccionado.nombre,
             destinoId: formFlota.destino,
             destinoNombre: destino?.nombre || formFlota.destino,
-            tipo: destinoEsHostil ? "ataque" : "movimiento",
+            tipo,
             cantidad,
         };
 
-        setOrdenFlotaPendiente(true);
-        ordenFlotaEnviadaAtRef.current = Date.now();
-        if (ordenFlotaTimeoutRef.current) {
-            clearTimeout(ordenFlotaTimeoutRef.current);
+        // Animación inmediata: no esperar al servidor
+        setMovimientoVisual({
+            origenId: seleccionado.id,
+            destinoId: formFlota.destino,
+            tipo,
+            expiresAt: ahoraMonotonoMs() + (destinoEsHostil ? 4000 : 3000),
+        });
+
+        if (destinoEsHostil) {
+            emitirAtacar(seleccionado.id, formFlota.destino, formFlota.cantidad);
+        } else {
+            emitirEnviarFlotas(seleccionado.id, formFlota.destino, formFlota.cantidad);
         }
-        ordenFlotaTimeoutRef.current = setTimeout(() => {
-            setOrdenFlotaPendiente(false);
-            accionFlotaPendienteRef.current = null;
-            setAlertaAtaque("Sin confirmación directa del servidor. Intenta enviar de nuevo.");
-            ordenFlotaTimeoutRef.current = null;
-            ordenFlotaEnviadaAtRef.current = null;
-        }, 12000);
-        emitirEnviarFlotas(seleccionado.id, formFlota.destino, formFlota.cantidad);
-        setAlertaAtaque("Orden enviada. Esperando confirmación del servidor...");
         setModalFlota(false);
     };
 
     const enviarAtaque = () => {
         if (!seleccionado || !formFlota.destino) return;
-        if (ordenFlotaPendiente) {
-            setAlertaAtaque("Espera: hay una orden de ataque en proceso de confirmación.");
-            return;
-        }
         const cantidad = Number(formFlota.cantidad) || 0;
-        const destino = sistemas.find((item) => item.id === formFlota.destino);
+        const destino = listaSistemas.find((item) => item.id === formFlota.destino);
 
         accionFlotaPendienteRef.current = {
             origenId: seleccionado.id,
@@ -735,27 +669,22 @@ export function useJuego(partidaId, playerName) {
             cantidad,
         };
 
-        setOrdenFlotaPendiente(true);
-        ordenFlotaEnviadaAtRef.current = Date.now();
-        if (ordenFlotaTimeoutRef.current) {
-            clearTimeout(ordenFlotaTimeoutRef.current);
-        }
-        ordenFlotaTimeoutRef.current = setTimeout(() => {
-            setOrdenFlotaPendiente(false);
-            accionFlotaPendienteRef.current = null;
-            setAlertaAtaque("Sin confirmación directa del servidor. Intenta atacar de nuevo.");
-            ordenFlotaTimeoutRef.current = null;
-            ordenFlotaEnviadaAtRef.current = null;
-        }, 12000);
+        // Animación inmediata
+        setMovimientoVisual({
+            origenId: seleccionado.id,
+            destinoId: formFlota.destino,
+            tipo: "ataque",
+            expiresAt: ahoraMonotonoMs() + 4000,
+        });
+
         emitirAtacar(seleccionado.id, formFlota.destino, formFlota.cantidad);
-        setAlertaAtaque("Conquista enviada. Esperando confirmación del servidor...");
         setModalFlota(false);
     };
 
     return {
         // Estado
-        estado,
-        mensajeInicio,
+        estado: partidaId ? estado : "error",
+        mensajeInicio: partidaId ? mensajeInicio : "No se encontró el código de partida",
         countdown,
         sistemas,
         recursos,
@@ -790,7 +719,6 @@ export function useJuego(partidaId, playerName) {
         eventosVisibles,
         ultimoSync,
         movimientoVisual,
-        ordenFlotaPendiente,
         // Modales
         modalConstruir,
         modalFlota,

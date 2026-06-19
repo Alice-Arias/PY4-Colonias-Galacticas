@@ -1,3 +1,10 @@
+// ==============================================================================================
+// NOMBRE: Lobby
+// ENTRADA: estado de la sala y lista de jugadores conectados
+// SALIDA: vista de espera antes de iniciar la partida
+// RESTRICCIONES: mantener visibles los tiempos y el estado de la sala
+// OBJETIVO: mostrar la sala de espera antes de iniciar la partida
+// ==============================================================================================
 import "../styles/Lobby.css";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -6,6 +13,13 @@ import socket from "../services/socket";
 import LobbyPlayersPanel from "../components/LobbyPlayersPanel";
 import { obtenerInfoTematica } from "../utils/tematicas";
 
+// ==============================================================================================
+// NOMBRE: Lobby
+// ENTRADA: datos de sala, jugadores y temporizador
+// SALIDA: vista de espera previa al inicio
+// RESTRICCIONES: actualiza estado en tiempo real por socket
+// OBJETIVO: coordinar la fase de espera de partida
+// ==============================================================================================
 function Lobby() {
     const fxRef = useRef(null);
     const gameStartFallbackRef = useRef(null);
@@ -18,7 +32,15 @@ function Lobby() {
     const [mensajeInicio, setMensajeInicio] = useState("");
     const [inicioPendiente, setInicioPendiente] = useState(false);
 
-    const [lobby, setLobby] = useState(location.state?.lobbyInicial || null);
+    const lobbyInicialGuardado = (() => {
+        try {
+            return JSON.parse(sessionStorage.getItem("partidaLobbyInicial") || localStorage.getItem("partidaLobbyInicial") || "null");
+        } catch {
+            return null;
+        }
+    })();
+
+    const [lobby, setLobby] = useState(location.state?.lobbyInicial || lobbyInicialGuardado || null);
 
     const partidaId = location.state?.partidaId || sessionStorage.getItem("partidaId") || localStorage.getItem("partidaId");
     const isHost = location.state?.isHost ?? false;
@@ -200,11 +222,14 @@ function Lobby() {
 
                     {tiempoRestante !== null && (
                         <div className="lobby-timer">
-                            <div className="lobby-timer-label">Tiempo de espera</div>
+                            <div className="lobby-timer-label">Tiempo de espera del lobby</div>
                             <div className="lobby-timer-display">
                                 <span className="lobby-timer-icon">⏱</span>
                                 <span className="lobby-timer-text">{formatearTiempo(tiempoRestante)}</span>
                             </div>
+                            <small className="lobby-timer-note">
+                                La duración real de la partida se define aparte y empieza cuando se pulsa entrar al juego.
+                            </small>
                         </div>
                     )}
 

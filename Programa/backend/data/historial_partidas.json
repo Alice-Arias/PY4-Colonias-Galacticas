@@ -1,5 +1,117 @@
 [
   {
+    "partidaId": "5fog4y",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 1799,
+    "ganador": "Bobby",
+    "tematica": "clasica",
+    "sistemasControlados": 3,
+    "recursosAcumulados": {
+      "minerales": 19769,
+      "energia": 11405,
+      "cristales": 7453
+    },
+    "tiempoFinalizacion": 1781893047281,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. Bobby lidera por puntaje"
+  },
+  {
+    "partidaId": "ypga41",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 179,
+    "ganador": "boba",
+    "tematica": "clasica",
+    "sistemasControlados": 3,
+    "recursosAcumulados": {
+      "minerales": 2001,
+      "energia": 1185,
+      "cristales": 707
+    },
+    "tiempoFinalizacion": 1781892420884,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. boba lidera por puntaje"
+  },
+  {
+    "partidaId": "p7y86d",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 2217,
+    "ganador": "Alicia",
+    "tematica": "clasica",
+    "sistemasControlados": 3,
+    "recursosAcumulados": {
+      "minerales": 10048,
+      "energia": 8640,
+      "cristales": 4906
+    },
+    "tiempoFinalizacion": 1781890586996,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. Alicia lidera por puntaje"
+  },
+  {
+    "partidaId": "x73s31",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 1799,
+    "ganador": "BOBS",
+    "tematica": "clasica",
+    "sistemasControlados": 2,
+    "recursosAcumulados": {
+      "minerales": 11047,
+      "energia": 8845,
+      "cristales": 6639
+    },
+    "tiempoFinalizacion": 1781889369868,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. BOBS lidera por puntaje"
+  },
+  {
+    "partidaId": "bljhbr",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 1799,
+    "ganador": "Alicia",
+    "tematica": "clasica",
+    "sistemasControlados": 2,
+    "recursosAcumulados": {
+      "minerales": 11276,
+      "energia": 8910,
+      "cristales": 6642
+    },
+    "tiempoFinalizacion": 1781889095517,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. Alicia lidera por puntaje"
+  },
+  {
+    "partidaId": "tj7p3d",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 21,
+    "ganador": "Alicia",
+    "tematica": "clasica",
+    "sistemasControlados": 1,
+    "recursosAcumulados": {
+      "minerales": 200,
+      "energia": 150,
+      "cristales": 50
+    },
+    "tiempoFinalizacion": 1781887218918,
+    "motivo": "ultimo_jugador",
+    "motivoTexto": "Alicia es el último jugador en pie"
+  },
+  {
+    "partidaId": "ozadhn",
+    "galaxia": "Templo de Sirius",
+    "tiempoJuego": 299,
+    "ganador": "Julian",
+    "tematica": "clasica",
+    "sistemasControlados": 3,
+    "recursosAcumulados": {
+      "minerales": 3196,
+      "energia": 1900,
+      "cristales": 832
+    },
+    "tiempoFinalizacion": 1781841197147,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. Julian lidera por puntaje"
+  },
+  {
     "partidaId": "rgcpir",
     "galaxia": "Nebulosa Orion",
     "tiempoJuego": 299,

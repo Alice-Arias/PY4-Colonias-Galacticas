@@ -1,6 +1,20 @@
+// ==============================================================================================
+// NOMBRE: LobbyPlayersPanel
+// ENTRADA: jugadores conectados en la sala
+// SALIDA: panel con la lista de participantes
+// RESTRICCIONES: reflejar el estado del lobby sin modificarlo
+// OBJETIVO: listar los jugadores conectados en la sala
+// ==============================================================================================
 import { PiDiamondsFourLight } from "react-icons/pi";
 import "../styles/LobbyPlayersPanel.css";
 
+// ==============================================================================================
+// NOMBRE: LobbyPlayersPanel
+// ENTRADA: estado de lobby y partidaId
+// SALIDA: listado de jugadores conectados
+// RESTRICCIONES: usa fallback cuando no hay jugadores
+// OBJETIVO: mostrar participantes presentes en sala
+// ==============================================================================================
 function LobbyPlayersPanel({ lobby, partidaId }) {
 
     const getAvatarSticker = () => "🧑‍🚀";

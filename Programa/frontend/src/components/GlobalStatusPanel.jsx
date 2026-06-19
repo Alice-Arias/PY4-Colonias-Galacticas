@@ -1,5 +1,19 @@
+// ==============================================================================================
+// NOMBRE: GlobalStatusPanel
+// ENTRADA: datos globales del jugador y la partida
+// SALIDA: panel de estado general visible en juego
+// RESTRICCIONES: mostrar solo datos agregados y relevantes
+// OBJETIVO: mostrar el estado global del jugador y la partida
+// ==============================================================================================
 import "../styles/GlobalStatusPanel.css";
 
+// ==============================================================================================
+// NOMBRE: GlobalStatusPanel
+// ENTRADA: métricas globales de partida y jugador
+// SALIDA: panel de estado resumido
+// RESTRICCIONES: solo presentación
+// OBJETIVO: mostrar indicadores estratégicos clave
+// ==============================================================================================
 export default function GlobalStatusPanel({
     topJugadores = [],
     metaVictoriaPorcentaje = 60,

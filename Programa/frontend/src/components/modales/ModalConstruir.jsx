@@ -10,6 +10,13 @@ import { getCostosTexto, getCostoConstruccion, puedeConstruir } from "../../util
 
 const COSTOS_TEXTO = getCostosTexto();
 
+// ==============================================================================================
+// NOMBRE: ModalConstruir
+// ENTRADA: sistema objetivo, recursos y callbacks
+// SALIDA: modal de selección de edificio
+// RESTRICCIONES: valida coste y disponibilidad antes de confirmar
+// OBJETIVO: gestionar construcciones desde la UI
+// ==============================================================================================
 export default function ModalConstruir({
     sistema,
     recursos,

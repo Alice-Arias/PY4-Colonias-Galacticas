@@ -1,4 +1,10 @@
-// Servidor principal multijugador (Socket + Express)
+// ==============================================================================================
+// NOMBRE: server.js
+// ENTRADA: peticiones HTTP, eventos Socket.IO y estado de partidas
+// SALIDA: API del servidor, eventos en tiempo real y persistencia en memoria
+// RESTRICCIONES: conservar compatibilidad con el cliente y las partidas activas
+// OBJETIVO: servir el backend principal multijugador
+// ==============================================================================================
 
 const express = require("express");
 const cors = require("cors");
@@ -12,6 +18,13 @@ const LogicaJuego = require("./src/models/GameLogic");
 
 const TEMATICAS_VALIDAS = new Set(["clasica", "aurora", "imperial", "abisal"]);
 
+// ==============================================================================================
+// NOMBRE: normalizarTematica
+// ENTRADA: valor de temática recibido
+// SALIDA: temática válida o valor por defecto
+// RESTRICCIONES: solo permite valores definidos en TEMATICAS_VALIDAS
+// OBJETIVO: mantener consistencia de temática entre cliente y servidor
+// ==============================================================================================
 function normalizarTematica(valor) {
     return TEMATICAS_VALIDAS.has(valor) ? valor : "clasica";
 }
@@ -30,6 +43,13 @@ global.io = io;
 const partidasEnMemoria = {};
 const historialPartidasPath = path.join(__dirname, "data", "historial_partidas.json");
 
+// ==============================================================================================
+// NOMBRE: cargarHistorialPartidas
+// ENTRADA: sin entrada explícita
+// SALIDA: arreglo de partidas históricas
+// RESTRICCIONES: retorna arreglo vacío ante archivo inexistente o error
+// OBJETIVO: restaurar historial persistido al iniciar el servidor
+// ==============================================================================================
 function cargarHistorialPartidas() {
     try {
         if (!fs.existsSync(historialPartidasPath)) {
@@ -44,6 +64,13 @@ function cargarHistorialPartidas() {
     }
 }
 
+// ==============================================================================================
+// NOMBRE: guardarHistorialPartidas
+// ENTRADA: arreglo historial de partidas
+// SALIDA: archivo JSON actualizado en disco
+// RESTRICCIONES: crea la carpeta de destino si no existe
+// OBJETIVO: persistir resultados históricos de partidas
+// ==============================================================================================
 function guardarHistorialPartidas(historial) {
     try {
         fs.mkdirSync(path.dirname(historialPartidasPath), { recursive: true });
@@ -55,7 +82,21 @@ function guardarHistorialPartidas(historial) {
 
 const historialPartidas = cargarHistorialPartidas();
 
+// ==============================================================================================
+// NOMBRE: ServidorJuego
+// ENTRADA: instancias de app (Express) y io (Socket.IO)
+// SALIDA: orquestador de rutas, sockets y ciclo de partidas
+// RESTRICCIONES: depende de partidas en memoria y lógica de juego
+// OBJETIVO: centralizar la operación del backend multijugador
+// ==============================================================================================
 class ServidorJuego {
+    // ==============================================================================================
+    // NOMBRE: constructor
+    // ENTRADA: instancia de express y socket.io
+    // SALIDA: servidor inicializado con rutas, sockets y limpieza periódica
+    // RESTRICCIONES: requiere referencias válidas de app e io
+    // OBJETIVO: preparar la orquestación principal del backend de juego
+    // ==============================================================================================
     constructor(app, ioServer) {
         this.app = app;
         this.io = ioServer;
@@ -173,7 +214,7 @@ class ServidorJuego {
             host: socket.id,
             galaxia,
             tiempoEspera: configuracionPartida.tiempoEspera || 300,
-            tiempoMax: configuracionPartida.tiempoMax || 300,
+            tiempoMax: configuracionPartida.tiempoMax || 1800,
             tematica,
             recursosIniciales: configuracionPartida.recursosIniciales,
         });

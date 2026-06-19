@@ -8,7 +8,14 @@
 
 import { calcularCostoMovimiento } from "../../utils/flotas";
 
-function tieneRutaValida(sistemas, origenId, destinoId, propietarioOrigenId) {
+// ==============================================================================================
+// NOMBRE: tieneRutaValida
+// ENTRADA: lista de sistemas, origen y destino
+// SALIDA: true/false si existe conexión válida
+// RESTRICCIONES: requiere ids de origen y destino
+// OBJETIVO: validar rutas antes del envío de flotas
+// ==============================================================================================
+function tieneRutaValida(sistemas, origenId, destinoId) {
     if (!origenId || !destinoId || origenId === destinoId) return false;
 
     const porId = new Map(sistemas.map((sistema) => [sistema.id, sistema]));
@@ -17,6 +24,13 @@ function tieneRutaValida(sistemas, origenId, destinoId, propietarioOrigenId) {
     return vecinos.includes(destinoId);
 }
 
+// ==============================================================================================
+// NOMBRE: ModalFlota
+// ENTRADA: origen, destinos, recursos y callbacks
+// SALIDA: modal de envío/ataque de flotas
+// RESTRICCIONES: no permite confirmar sin destino válido
+// OBJETIVO: orquestar movimiento militar desde UI
+// ==============================================================================================
 export default function ModalFlota({
     sistemaOrigen,
     sistemas,
@@ -26,7 +40,6 @@ export default function ModalFlota({
     onEnviar,
     onCerrar,
     onAtacar,
-    ordenPendiente = false,
 }) {
     if (!sistemaOrigen) return null;
 
@@ -47,7 +60,7 @@ export default function ModalFlota({
     );
     const destinoNeutral = Boolean(destinoSeleccionado && !destinoSeleccionado.propietarioId);
     const rutaValida = destinoSeleccionado
-        ? tieneRutaValida(sistemas, sistemaOrigen.id, destinoSeleccionado.id, sistemaOrigen.propietarioId)
+        ? tieneRutaValida(sistemas, sistemaOrigen.id, destinoSeleccionado.id)
         : false;
     const origenBajoAtaque = Boolean(sistemaOrigen?.bajoAtaque);
     const destinoBajoAtaque = Boolean(destinoSeleccionado?.bajoAtaque);
@@ -57,8 +70,7 @@ export default function ModalFlota({
         && rutaValida
         && flotasValidas
         && !origenBajoAtaque
-        && !destinoBajoAtaque
-        && !ordenPendiente;
+        && !destinoBajoAtaque;
 
     let motivoBloqueo = "";
     if (!destinoSeleccionado) {
@@ -73,8 +85,6 @@ export default function ModalFlota({
         motivoBloqueo = "Debes enviar al menos 1 flota.";
     } else if (flotasAtaque > flotasDisponibles) {
         motivoBloqueo = `Flotas insuficientes: tienes ${flotasDisponibles} y pediste ${flotasAtaque}.`;
-    } else if (ordenPendiente) {
-        motivoBloqueo = "Hay una orden en curso. Espera confirmación del servidor.";
     }
 
     let diagnosticoCombate = null;
@@ -216,9 +226,7 @@ export default function ModalFlota({
                         onClick={destinoHostil ? onAtacar : onEnviar}
                         disabled={!puedeEnviar}
                     >
-                        {ordenPendiente
-                            ? "Procesando..."
-                            : (destinoHostil || destinoNeutral ? "Conquistar" : "Enviar Flota")}
+                        {destinoHostil || destinoNeutral ? "Conquistar" : "Enviar Flota"}
                     </button>
                     <button className="modal-cancel" onClick={onCerrar}>
                         Cancelar

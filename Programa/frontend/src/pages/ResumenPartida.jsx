@@ -1,3 +1,10 @@
+// ==============================================================================================
+// NOMBRE: ResumenPartida
+// ENTRADA: resumen final de victoria, derrota y puntajes
+// SALIDA: pantalla con el cierre de la partida
+// RESTRICCIONES: conservar el estado final sin reabrir acciones
+// OBJETIVO: resumir el resultado final de una partida
+// ==============================================================================================
 import { useEffect, useMemo, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import backgroundLogin from "../assets/backgroundLogin.jpeg";
@@ -5,6 +12,13 @@ import { formatearTiempo } from "../utils/transformadores";
 import { obtenerInfoTematica } from "../utils/tematicas";
 import "../styles/Ranking.css";
 
+// ==============================================================================================
+// NOMBRE: ResumenPartida
+// ENTRADA: datos de cierre de la partida
+// SALIDA: vista de resumen final
+// RESTRICCIONES: depende de estado de navegación o sesión
+// OBJETIVO: presentar estadísticas y resultado final
+// ==============================================================================================
 export default function ResumenPartida() {
     const navigate = useNavigate();
     const location = useLocation();

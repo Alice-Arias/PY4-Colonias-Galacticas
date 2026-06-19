@@ -1,13 +1,4 @@
-// ======================================================
-// NOMBRE: Combates
-// ENTRADA: datos del atacante, defensor, sistema destino y flotas
-// SALIDA: resultado del combate y nuevo estado del sistema
-// OBJETIVO: resolver enfrentamientos y conquistas entre jugadores
-// ======================================================
-
-// Regla enunciado: cada unidad atacante neutraliza 3 minas.
 const MINAS_NEUTRALIZADAS_POR_UNIDAD_ATAQUE = 3;
-// Regla enunciado: para derribar una fortaleza se requieren 2 unidades de ataque.
 const UNIDADES_ATAQUE_POR_FORTALEZA = 2;
 
 class GestorCombates {
@@ -18,13 +9,13 @@ class GestorCombates {
         this.batallasActivas = new Set();
     }
 
-    // ======================================================
+    // ==============================================================================================
     // NOMBRE: resolverAtaque
     // ENTRADA: socketId atacante, sistema origen, sistema destino, cantidad de flotas, costo pagado
     // SALIDA: objeto con resultado inmediato; el resultado final llega por evento battle_result
     // RESTRICCIONES: no iniciar dos batallas simultáneas en el mismo sistema
     // OBJETIVO: gestionar el flujo completo de un ataque entre jugadores
-    // ======================================================
+    // ==============================================================================================
     resolverAtaque(socketId, origen, destino, cantidad, costoEnvio) {
         const atacante = this.jugadores.get(socketId);
         const defensor = this.jugadores.get(destino.propietarioId);
@@ -40,7 +31,6 @@ class GestorCombates {
         this.batallasActivas.add(destino.id);
         destino.bajoAtaque = true;
 
-        // Notificar inicio de batalla a todos los jugadores
         if (global.io && this.partida?.id) {
             const minas = Number(destino.minas || 0);
             const fortalezas = Number(destino.fortalezas || 0);
@@ -66,7 +56,6 @@ class GestorCombates {
                 },
             };
             
-            // Emitir battle_start a todos en la partida
             global.io.to(this.partida.id).emit("battle_start", datoBatalla);
             this._registrarEvento("battle_start", {
                 jugador: atacante.nickname,
@@ -74,7 +63,6 @@ class GestorCombates {
                 color: "#ffa94d",
             });
             
-            // Notificación especial al defensor
             if (defensor.socketId) {
                 global.io.to(defensor.socketId).emit("incoming_attack", {
                     atacante: atacante.nickname,
@@ -109,13 +97,11 @@ class GestorCombates {
             } finally {
                 if (global.io && this.partida?.id) {
                     global.io.to(this.partida.id).emit("battle_result", resultado);
-                    // Envío de confirmación adicional para garantizar recepción
                     global.io.to(this.partida.id).emit("combat_completed", {
                         timestamp: new Date().toISOString(),
                         resultado: resultado,
                     });
 
-                    // Notificación dedicada al jugador que perdió el sistema conquistado.
                     if (resultado?.planetaConquistado && defensor?.socketId) {
                         global.io.to(defensor.socketId).emit("sistema_conquistado", {
                             sistemaId: resultado.sistemaId,
@@ -130,7 +116,6 @@ class GestorCombates {
                 this.batallasActivas.delete(destino.id);
                 destino.bajoAtaque = false;
 
-                // da estado actualizado, evaluar victoria
                 if (this.onBatallaResuelta) {
                     this.onBatallaResuelta();
                 }
@@ -145,13 +130,13 @@ class GestorCombates {
         };
     }
 
-    // ======================================================
+    // ==============================================================================================
     // NOMBRE: _calcularResultado
     // ENTRADA: socketId atacante, sistema origen, sistema destino, objetos atacante y defensor, cantidad de flotas
     // SALIDA: objeto con resultado detallado del combate
     // RESTRICCIONES: usar las reglas definidas en el enunciado
     // OBJETIVO: aplicar las reglas de combate y actualizar el estado del sistema
-    // ======================================================
+    // ==============================================================================================
     _calcularResultado(socketId, origen, destino, atacante, defensor, cantidad) {
         const flotasDefensorasIniciales = Number(destino.flotas || 0);
         const minasIniciales = Number(destino.minas || 0);
@@ -159,7 +144,6 @@ class GestorCombates {
         const astillerosAtacantesDisponibles = Number(origen?.astilleros || 0);
         const flotasAtacantesIniciales = Number(cantidad || 0);
 
-        // Regla 1: las flotas se neutralizan 1 a 1.
         const flotasNeutralizadas = Math.min(flotasAtacantesIniciales, flotasDefensorasIniciales);
         const flotasAtacantesTrasDuelo = flotasAtacantesIniciales - flotasNeutralizadas;
         const flotasDefensorasTrasDuelo = flotasDefensorasIniciales - flotasNeutralizadas;
@@ -173,9 +157,6 @@ class GestorCombates {
         let ataqueGana = false;
 
         if (flotasDefensorasTrasDuelo <= 0) {
-            // Reglas PDF:
-            // - Cada flota o astillero neutraliza 3 minas.
-            // - Para derribar una fortaleza se requieren 2 astilleros.
             const unidadesParaNeutralizarMinas = Math.ceil(minasIniciales / MINAS_NEUTRALIZADAS_POR_UNIDAD_ATAQUE);
             const astillerosNecesariosFortalezas = fortalezasIniciales * UNIDADES_ATAQUE_POR_FORTALEZA;
             const astillerosNecesariosExtraMinas = Math.max(0, unidadesParaNeutralizarMinas - flotasAtacantesTrasDuelo);
@@ -195,7 +176,6 @@ class GestorCombates {
                     origen.astilleros = Math.max(0, Number(origen.astilleros || 0) - astillerosAtacantesUsados);
                 }
 
-                // El atacante conquista: mantiene flota restante y el sistema conserva centros de investigación.
                 this.conquistarSistema(socketId, destino.id, { flotasRestantes });
 
                 this._registrarEvento("owner_change", {
@@ -212,7 +192,6 @@ class GestorCombates {
 
                 this._verificarEliminacion(defensor);
             } else {
-                // Defensa exitosa: se descuentan solo los elementos realmente usados.
                 const fortalezasDerribadas = Math.min(
                     fortalezasIniciales,
                     Math.floor(astillerosAtacantesDisponibles / UNIDADES_ATAQUE_POR_FORTALEZA)
@@ -249,7 +228,6 @@ class GestorCombates {
                 });
             }
         } else {
-            // El defensor retiene flotas; no se usan minas/fortalezas en esta fase.
             destino.flotas = flotasDefensorasTrasDuelo;
 
             this._registrarEvento("battle", {
@@ -281,13 +259,13 @@ class GestorCombates {
         };
     }
 
-    // ======================================================
+    // ==============================================================================================
     // NOMBRE: conquistarSistema
     // ENTRADA: socketId del conquistador, sistemaId, opciones (inicial, flotasRestantes)
     // SALIDA: objeto { conquistado, sistema }
     // RESTRICCIONES: jugador y sistema deben existir
     // OBJETIVO: transferir propiedad del sistema y actualizar contadores
-    // ======================================================
+    // ==============================================================================================
     conquistarSistema(socketId, sistemaId, options = {}) {
         const jugador = this.jugadores.get(socketId);
         const sistema = this.sistemas.get(sistemaId);
@@ -298,7 +276,6 @@ class GestorCombates {
 
         const propietarioAnterior = sistema.propietarioId;
 
-        // Quitar el sistema al propietario anterior
         if (propietarioAnterior && propietarioAnterior !== socketId) {
             const jugadorAnterior = this.jugadores.get(propietarioAnterior);
             if (jugadorAnterior) {
@@ -311,7 +288,6 @@ class GestorCombates {
             sistema.astilleros = 0;
         }
 
-        // Asigna nuevo propietario
         sistema.propietarioId = socketId;
         sistema.propietario   = jugador.nickname;
         sistema.flotas        = options.flotasRestantes ?? sistema.flotas ?? 0;
@@ -337,13 +313,13 @@ class GestorCombates {
         return { conquistado: true, sistema };
     }
 
-    // ======================================================
+    // ==============================================================================================
     // NOMBRE: _verificarEliminacion
     // ENTRADA: objeto jugador defensor
     // SALIDA: emite evento jugador_eliminado si no tiene sistemas
     // RESTRICCIONES: ninguna
     // OBJETIVO: detectar y notificar cuando un jugador pierde todos sus sistemas
-    // ======================================================
+    // ==============================================================================================
     _verificarEliminacion(jugador) {
         this._reconciliarSistemasJugador(jugador);
 
@@ -365,26 +341,26 @@ class GestorCombates {
         }
     }
 
-    // ======================================================
+    // ==============================================================================================
     // NOMBRE: _registrarEvento
     // ENTRADA: tipo de evento y payload con detalles
     // SALIDA: ninguna (delega al manejador externo)
     // RESTRICCIONES: onRegistrarEvento debe estar asignado por GameLogic
     // OBJETIVO: registrar eventos de combate en el log global
-    // ======================================================
+    // ==============================================================================================
     _registrarEvento(tipo, payload) {
         if (this.onRegistrarEvento) {
             this.onRegistrarEvento(tipo, payload);
         }
     }
 
-    // ======================================================
+    // ==============================================================================================
     // NOMBRE: _reconciliarSistemasJugador
     // ENTRADA: objeto jugador
     // SALIDA: actualiza jugador.sistemas y jugador.sistemasControlados según estado real
     // RESTRICCIONES: jugador debe tener socketId válido
     // OBJETIVO: evitar desincronizaciones al decidir eliminación
-    // ======================================================
+    // ==============================================================================================
     _reconciliarSistemasJugador(jugador) {
         if (!jugador?.socketId) return;
 

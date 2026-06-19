@@ -1,6 +1,20 @@
+// ==============================================================================================
+// NOMBRE: ResourceBar
+// ENTRADA: recursos, control territorial y temporizadores
+// SALIDA: barra superior de estado del jugador
+// RESTRICCIONES: actualizarse sin bloquear la interfaz
+// OBJETIVO: presentar los recursos, el control territorial y los temporizadores
+// ==============================================================================================
 import "../styles/ResourceBar.css";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
+// ==============================================================================================
+// NOMBRE: ResourceBar
+// ENTRADA: recursos, ranking y tiempos actuales
+// SALIDA: barra superior de estado
+// RESTRICCIONES: evita cálculos costosos en render
+// OBJETIVO: visualizar el estado estratégico en tiempo real
+// ==============================================================================================
 export default function ResourceBar({
     playerName,
     minerales,
@@ -17,30 +31,28 @@ export default function ResourceBar({
     estado,
     ultimoSync,
 }) {
-    const [ahora, setAhora] = useState(Date.now());
+    const [ahora, setAhora] = useState(0);
 
     useEffect(() => {
-        const intervalo = setInterval(() => setAhora(Date.now()), 1000);
+        const tick = () => setAhora(Date.now());
+        tick();
+        const intervalo = setInterval(tick, 1000);
         return () => clearInterval(intervalo);
     }, []);
 
-    const syncClock = useMemo(() => {
-        return new Date(ahora).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-    }, [ahora]);
+    const syncClock = new Date(ahora).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
-    const syncLabel = useMemo(() => {
-        if (!ultimoSync) return "esperando primer sync";
-
+    let syncLabel = "esperando primer sync";
+    if (ultimoSync) {
         const segundos = Math.max(0, Math.floor((ahora - ultimoSync) / 1000));
-        if (segundos < 5) return "actualizado ahora";
-        if (segundos < 60) return `última sync hace ${segundos}s`;
-
-        const minutos = Math.floor(segundos / 60);
-        if (minutos < 60) return `última sync hace ${minutos}m`;
-
-        const horas = Math.floor(minutos / 60);
-        return `última sync hace ${horas}h`;
-    }, [ahora, ultimoSync]);
+        if (segundos < 5) syncLabel = "actualizado ahora";
+        else if (segundos < 60) syncLabel = `última sync hace ${segundos}s`;
+        else {
+            const minutos = Math.floor(segundos / 60);
+            if (minutos < 60) syncLabel = `última sync hace ${minutos}m`;
+            else syncLabel = `última sync hace ${Math.floor(minutos / 60)}h`;
+        }
+    }
 
     return (
         <div className="resource-bar">

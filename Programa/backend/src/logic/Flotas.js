@@ -55,7 +55,7 @@ class GestorFlotas {
             return { exito: false, mensaje: "El sistema destino está siendo atacado" };
         }
 
-        if (!this._hayRutaValida(origenId, destinoId, socketId)) {
+        if (!this._hayRutaValida(origenId, destinoId)) {
             return { exito: false, mensaje: "No existe una ruta válida hacia ese sistema" };
         }
 
@@ -73,11 +73,7 @@ class GestorFlotas {
             };
         }
 
-        const costoEnvio = {
-            minerales: COSTO_ENVIO_POR_FLOTA.minerales * cantidadFlotas,
-            energia:   COSTO_ENVIO_POR_FLOTA.energia   * cantidadFlotas,
-            cristales: COSTO_ENVIO_POR_FLOTA.cristales * cantidadFlotas,
-        };
+        const costoEnvio = this.getCostoEnvio(cantidadFlotas);
 
         const puedePagarEnvio =
             jugador.recursos.minerales >= costoEnvio.minerales &&
@@ -109,24 +105,12 @@ class GestorFlotas {
 
         // 1.1) destino sin dueño: conquista inmediata
         if (!destino.propietarioId) {
-            destino.propietarioId = socketId;
-            destino.propietario = jugador.nickname;
-            destino.flotas = cantidadFlotas;
-            destino.bajoAtaque = false;
-
-            const jugadorSistema = this.jugadores.get(socketId);
-            if (jugadorSistema) {
-                jugadorSistema.sistemas.add(destinoId);
-                jugadorSistema.sistemasControlados = jugadorSistema.sistemas.size;
-            }
-
-            return {
-                exito: true,
-                mensaje: `${jugador.nickname} conquistó ${destino.nombre}`,
-                costo: costoEnvio,
-                conquistado: true,
-                nuevoPropietario: jugador.nickname,
-            };
+            return this._conquistarSistemaNeutral({
+                socketId,
+                destinoId,
+                cantidadFlotas,
+                costoEnvio,
+            });
         }
 
         // 2) destino enemigo con conquista automática
@@ -153,13 +137,45 @@ class GestorFlotas {
     // RESTRICCIONES: solo se permite movimiento por ruta directa entre origen y destino
     // OBJETIVO: validar adyacencia real en el grafo
     // ======================================================
-    _hayRutaValida(origenId, destinoId, socketId) {
+    _hayRutaValida(origenId, destinoId) {
         if (origenId === destinoId) return false;
 
         const vecinosOrigen = this.rutas.get(origenId);
         if (!vecinosOrigen) return false;
 
         return vecinosOrigen.has(destinoId);
+    }
+
+    // ======================================================
+    // NOMBRE: _conquistarSistemaNeutral
+    // ENTRADA: socketId del jugador, id del destino, cantidad de flotas y costo
+    // SALIDA: resultado de conquista neutral listo para emitir a la UI
+    // RESTRICCIONES: destino sin propietario y jugador existente
+    // OBJETIVO: encapsular transferencia de ownership neutral en un solo método
+    // ======================================================
+    _conquistarSistemaNeutral({ socketId, destinoId, cantidadFlotas, costoEnvio }) {
+        const jugador = this.jugadores.get(socketId);
+        const destino = this.sistemas.get(destinoId);
+
+        if (!jugador || !destino) {
+            return { exito: false, mensaje: "No se pudo completar la conquista" };
+        }
+
+        destino.propietarioId = socketId;
+        destino.propietario = jugador.nickname;
+        destino.flotas = cantidadFlotas;
+        destino.bajoAtaque = false;
+
+        jugador.sistemas.add(destinoId);
+        jugador.sistemasControlados = jugador.sistemas.size;
+
+        return {
+            exito: true,
+            mensaje: `${jugador.nickname} conquistó ${destino.nombre}`,
+            costo: costoEnvio,
+            conquistado: true,
+            nuevoPropietario: jugador.nickname,
+        };
     }
 
     // ======================================================
