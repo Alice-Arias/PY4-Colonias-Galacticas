@@ -3,10 +3,18 @@
 const express = require("express");
 const cors = require("cors");
 const http = require("http");
+const fs = require("fs");
+const path = require("path");
 const { Server } = require("socket.io");
 
 const { Partida, crearUniverso, listarGalaxias } = require("./game/universo");
 const LogicaJuego = require("./src/models/GameLogic");
+
+const TEMATICAS_VALIDAS = new Set(["clasica", "aurora", "imperial", "abisal"]);
+
+function normalizarTematica(valor) {
+    return TEMATICAS_VALIDAS.has(valor) ? valor : "clasica";
+}
 
 const app = express();
 
@@ -20,6 +28,32 @@ global.io = io;
 
 // Almacenamiento de partidas en memoria
 const partidasEnMemoria = {};
+const historialPartidasPath = path.join(__dirname, "data", "historial_partidas.json");
+
+function cargarHistorialPartidas() {
+    try {
+        if (!fs.existsSync(historialPartidasPath)) {
+            return [];
+        }
+
+        const contenido = fs.readFileSync(historialPartidasPath, "utf8");
+        const datos = JSON.parse(contenido);
+        return Array.isArray(datos) ? datos : [];
+    } catch {
+        return [];
+    }
+}
+
+function guardarHistorialPartidas(historial) {
+    try {
+        fs.mkdirSync(path.dirname(historialPartidasPath), { recursive: true });
+        fs.writeFileSync(historialPartidasPath, JSON.stringify(historial, null, 2), "utf8");
+    } catch (error) {
+        console.error("No se pudo guardar el historial de partidas:", error.message);
+    }
+}
+
+const historialPartidas = cargarHistorialPartidas();
 
 class ServidorJuego {
     constructor(app, ioServer) {
@@ -48,6 +82,9 @@ class ServidorJuego {
             estado: partida.estado,
             host: partida.host,
             tiempoEspera: partida.tiempoEspera,
+            tiempoMax: partida.tiempoMax,
+            tematica: partida.tematica,
+            recursosIniciales: partida.recursosIniciales,
             tiempoRestante: partida.obtenerTiempoRestante(),
             jugadores: partida.jugadores.map((jugador) => ({
                 id: jugador.id,
@@ -111,6 +148,10 @@ class ServidorJuego {
         this.app.get("/galaxias", (req, res) => {
             res.json({ ok: true, galaxias: listarGalaxias() });
         });
+
+        this.app.get("/ranking/historico", (req, res) => {
+            res.json({ ok: true, historial: historialPartidas });
+        });
     }
 
     // ======================================================
@@ -123,6 +164,7 @@ class ServidorJuego {
     crearPartida(configuracionPartida, socket) {
         const id = Math.random().toString(36).substring(2, 8);
         const galaxia = crearUniverso(configuracionPartida.galaxia);
+        const tematica = normalizarTematica(configuracionPartida.tematica);
 
         const partida = new Partida({
             id,
@@ -131,7 +173,12 @@ class ServidorJuego {
             host: socket.id,
             galaxia,
             tiempoEspera: configuracionPartida.tiempoEspera || 300,
+            tiempoMax: configuracionPartida.tiempoMax || 300,
+            tematica,
+            recursosIniciales: configuracionPartida.recursosIniciales,
         });
+
+        partida.porcentajeVictoria = configuracionPartida.porcentajeVictoria || 0.6;
 
         partida.agregarJugador({ id: socket.id, nickname: configuracionPartida.nickname, host: true });
 
@@ -245,14 +292,14 @@ class ServidorJuego {
     // NOMBRE: iniciarPartida
     // ENTRADA: id de partida + socket solicitante
     // SALIDA: countdown, game_started y estado inicial de juego
-    // RESTRICCIONES: solo host y mínimo 2 jugadores
+    // RESTRICCIONES: solo host y sala completa
     // OBJETIVO: arrancar lógica de juego en tiempo real
     // ======================================================
     iniciarPartida(partidaId, socket) {
         const partida = this.partidas[partidaId];
         if (!partida || !partida.puedeIniciar(socket.id)) {
-            if (partida && partida.host === socket.id && partida.jugadores.length < 2) {
-                socket.emit("error_start", { mensaje: "Se necesitan mínimo 2 jugadores" });
+            if (partida && partida.host === socket.id && partida.jugadores.length < partida.maxJugadores) {
+                socket.emit("error_start", { mensaje: `Se necesitan ${partida.maxJugadores} jugadores para iniciar` });
             }
             return;
         }
@@ -266,16 +313,40 @@ class ServidorJuego {
             if (t <= 0) {
                 clearInterval(countdownInterval);
                 partida.estado = "jugando";
+                partida.marcarInicioJuego();
 
                 // Inicializar LogicaJuego con galaxia, jugadores y bases iniciales
                 const jugadoresData = partida.jugadores.map((j) => ({ socketId: j.id, nickname: j.nickname }));
 
                 partida.gameLogic = new LogicaJuego(partida, {
                     intervaloProduccionMs: 20000,
-                    porcentajeVictoria: 0.6,
+                    porcentajeVictoria: partida.porcentajeVictoria || 0.6,
+                    onPartidaFinalizada: (resumenFinal) => {
+                        if (!resumenFinal) return;
+
+                        historialPartidas.unshift({
+                            partidaId: resumenFinal.partidaId,
+                            galaxia: resumenFinal.galaxia,
+                            tiempoJuego: resumenFinal.tiempoJuego,
+                            ganador: resumenFinal.ganador,
+                            tematica: resumenFinal.tematica || "clasica",
+                            sistemasControlados: resumenFinal.sistemasControlados || 0,
+                            recursosAcumulados: resumenFinal.recursosAcumulados || { minerales: 0, energia: 0, cristales: 0 },
+                            tiempoFinalizacion: Date.now(),
+                            motivo: resumenFinal.motivo,
+                            motivoTexto: resumenFinal.motivoTexto,
+                        });
+
+                        if (historialPartidas.length > 100) {
+                            historialPartidas.pop();
+                        }
+
+                        guardarHistorialPartidas(historialPartidas);
+                    },
                 });
                 partida.gameLogic.inicializar(jugadoresData);
                 partida.gameLogic.iniciarProduccion();
+                partida.gameLogic.iniciarControlTiempoPartida();
 
                 const estadoInicial = partida.gameLogic.obtenerEstadoPartida();
                 this.io.to(partidaId).emit("game_started", {
@@ -334,13 +405,19 @@ class ServidorJuego {
 
                 const estadoActualizado = partida.gameLogic.obtenerEstadoPartida();
                 this.io.to(partidaId).emit("game_state_update", estadoActualizado);
+
+                // Refresco de seguridad para clientes con latencia o desorden de eventos
+                setTimeout(() => {
+                    if (!this.partidas[partidaId]?.gameLogic) return;
+                    this.io.to(partidaId).emit("game_state_update", this.partidas[partidaId].gameLogic.obtenerEstadoPartida());
+                }, 250);
             });
 
-            socket.on("presionar_tecla_u", ({ partidaId }) => {
+            socket.on("presionar_tecla_u", ({ partidaId, nickname }) => {
                 const partida = this.partidas[partidaId];
                 if (!partida || !partida.gameLogic) return;
 
-                const resultado = partida.gameLogic.iniciarConTeclaU(socket.id);
+                const resultado = partida.gameLogic.iniciarConTeclaU(socket.id, nickname);
                 socket.emit("inicio_u_resultado", resultado);
 
                 if (resultado?.exito) {
@@ -349,15 +426,30 @@ class ServidorJuego {
             });
 
             socket.on("atacar", (datosAtaque) => {
-                const { partidaId, origen, destino } = datosAtaque;
+                const { partidaId, origen, destino, cantidad } = datosAtaque;
                 const partida = this.partidas[partidaId];
                 if (!partida || !partida.gameLogic) return;
 
-                const resultado = partida.gameLogic.atacar(socket.id, origen, destino);
+                const resultado = partida.gameLogic.atacar(socket.id, origen, destino, cantidad);
                 socket.emit("ataque_resultado", resultado);
 
-                const estadoActualizado = partida.gameLogic.obtenerEstadoPartida();
-                this.io.to(partidaId).emit("game_state_update", estadoActualizado);
+                // Solo emitir de inmediato cuando no hay combate pendiente.
+                // Si hay combate, la resolución final y el refresh llegan luego.
+                if (resultado?.exito && !resultado?.enCombate) {
+                    const estadoActualizado = partida.gameLogic.obtenerEstadoPartida();
+                    this.io.to(partidaId).emit("game_state_update", estadoActualizado);
+                } else if (resultado?.exito && resultado?.enCombate) {
+                    setTimeout(() => {
+                        const estadoFinal = partida.gameLogic.obtenerEstadoPartida();
+                        this.io.to(partidaId).emit("game_state_update", estadoFinal);
+                    }, 500);
+                }
+
+                // Refresco extra para asegurar que el grafo siempre reciba el estado final
+                setTimeout(() => {
+                    if (!this.partidas[partidaId]?.gameLogic) return;
+                    this.io.to(partidaId).emit("game_state_update", this.partidas[partidaId].gameLogic.obtenerEstadoPartida());
+                }, 900);
             });
 
             socket.on("get_game_state", (partidaId) => {
@@ -396,6 +488,17 @@ class ServidorJuego {
 new ServidorJuego(app, io);
 
 // Inicio del servidor
-server.listen(3002, "0.0.0.0", () => {
-    console.log("Servidor multiplayer listo en puerto 3002");
+const PORT = Number(process.env.PORT) || 3002;
+
+server.on("error", (error) => {
+    if (error.code === "EADDRINUSE") {
+        console.error(`El puerto ${PORT} ya está en uso. Cierra el proceso que lo ocupa o inicia el backend con otro PORT.`);
+        process.exit(1);
+    }
+
+    throw error;
+});
+
+server.listen(PORT, "0.0.0.0", () => {
+    console.log(`Servidor multiplayer listo en puerto ${PORT}`);
 });

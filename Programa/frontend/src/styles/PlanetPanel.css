@@ -14,6 +14,7 @@
   overflow-x: hidden;
   flex: 1;
   min-height: 0;
+  animation: planet-panel-in 0.55s ease both;
 }
 
 .planet-empty {
@@ -47,6 +48,7 @@
   box-shadow: 0 0 0 8px rgba(66, 245, 155, 0.08);
   font-size: 30px;
   flex-shrink: 0;
+  animation: planet-core-pulse 3.5s ease-in-out infinite;
 }
 
 .planet-emoji {
@@ -152,6 +154,12 @@
   border-radius: 12px;
   border: 1px solid rgba(131, 157, 206, 0.12);
   flex-shrink: 0;
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+
+.detail-section:hover {
+  border-color: rgba(143, 255, 208, 0.28);
+  transform: translateY(-1px);
 }
 
 .detail-section h4 {
@@ -257,21 +265,48 @@
 .action-buttons {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-top: 15px;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 10px;
+  position: sticky;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(9, 19, 33, 0) 0%, rgba(9, 19, 33, 0.95) 38%, rgba(9, 19, 33, 0.98) 100%);
+  border-top: 1px solid rgba(131, 157, 206, 0.14);
   flex-shrink: 0;
+  z-index: 2;
 }
 
 .btn {
-  padding: 10px;
+  min-height: 44px;
+  padding: 10px 8px;
   border: none;
   border-radius: 12px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: bold;
   text-transform: uppercase;
   cursor: pointer;
   transition: all 0.3s ease;
-  letter-spacing: 1px;
+  letter-spacing: 0.06em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.2;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 -120%;
+  width: 70%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+  transition: left 0.4s ease;
+}
+
+.btn:hover::before {
+  left: 130%;
 }
 
 .btn-construct {
@@ -315,6 +350,27 @@
   transform: none;
 }
 
+@keyframes planet-panel-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes planet-core-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 8px rgba(66, 245, 155, 0.08);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(66, 245, 155, 0.14);
+  }
+}
+
 @media (max-width: 768px) {
   .planet-panel {
     max-height: none;
@@ -326,5 +382,9 @@
 
   .action-buttons {
     grid-template-columns: 1fr;
+    position: static;
+    border-top: none;
+    padding-top: 0;
+    background: transparent;
   }
 }

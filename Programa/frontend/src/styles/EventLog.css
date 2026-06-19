@@ -33,14 +33,19 @@
   letter-spacing: 1.2px;
 }
 
-.log-header-btn {
+.log-header-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 24px;
+  border-radius: 999px;
   border: 1px solid rgba(131, 157, 206, 0.26);
   background: rgba(9, 22, 38, 0.75);
   color: #cfe0fb;
-  border-radius: 8px;
-  padding: 4px 10px;
   font-size: 12px;
-  cursor: pointer;
+  font-weight: 700;
+  animation: log-badge-pulse 2.8s ease-in-out infinite;
 }
 
 .log-content {
@@ -95,10 +100,30 @@
   transition: all 0.3s ease;
   flex-shrink: 0;
   line-height: 1.4;
+  animation: log-item-in 0.35s ease both;
+}
+
+.log-item:nth-child(1) { animation-delay: 0.02s; }
+.log-item:nth-child(2) { animation-delay: 0.04s; }
+.log-item:nth-child(3) { animation-delay: 0.06s; }
+.log-item:nth-child(4) { animation-delay: 0.08s; }
+.log-item:nth-child(5) { animation-delay: 0.1s; }
+
+.log-type {
+  color: #09111d;
+  background: #8fffd0;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  flex-shrink: 0;
+  align-self: flex-start;
 }
 
 .log-item:hover {
-  background: rgba(66, 245, 155, 0.09);
+  background: rgba(66, 245, 155, 0.11);
+  transform: translateX(2px);
 }
 
 .log-time {
@@ -121,10 +146,34 @@
   word-wrap: break-word;
 }
 
+.event-log.compact .log-content {
+  gap: 5px;
+  padding: 8px 10px;
+}
+
+.event-log.compact .log-item {
+  padding: 6px 8px;
+  font-size: 11px;
+}
+
+.event-log.compact .log-type {
+  padding: 2px 7px;
+  font-size: 9px;
+}
+
+.event-log.compact .log-player {
+  min-width: 70px;
+}
+
 /* Estilos según tipo de evento */
 .log-conquest {
   border-left: 2px solid #ff4444;
   background: rgba(255, 68, 68, 0.05);
+}
+
+.log-owner_change {
+  border-left: 2px solid #ff6b6b;
+  background: rgba(255, 107, 107, 0.08);
 }
 
 .log-build {
@@ -145,6 +194,32 @@
 .log-eliminated {
   border-left: 2px solid #ff0000;
   background: rgba(255, 0, 0, 0.05);
+}
+
+.log-system {
+  border-left: 2px solid #f6d365;
+  background: rgba(246, 211, 101, 0.06);
+}
+
+@keyframes log-item-in {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes log-badge-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(143, 255, 208, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(143, 255, 208, 0.18);
+  }
 }
 
 @media (max-width: 768px) {

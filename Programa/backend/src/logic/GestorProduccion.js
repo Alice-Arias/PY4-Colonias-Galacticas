@@ -69,21 +69,31 @@ class GestorProduccion {
             );
 
             sistemasControlados.forEach((sistema) => {
-                const minas = sistema.minas || 0;
                 const centrales = sistema.centrales || 0;
+                const astilleros = sistema.astilleros || 0;
+                const produccionBase = sistema.produccion || { minerales: 0, energia: 0, cristales: 0 };
+                const produccionCentrales = {
+                    minerales: centrales * PRODUCCION_CENTRAL.minerales,
+                    energia: centrales * PRODUCCION_CENTRAL.energia,
+                    cristales: centrales * PRODUCCION_CENTRAL.cristales,
+                };
 
-                // Bug: antes se sumaban recursos tanto al jugador como al sistema,
-                // causando duplicación. Ahora los recursos de producción van solo al jugador.
-                jugador.recursos.minerales += sistema.produccion.minerales
-                    + minas * 10
-                    + centrales * PRODUCCION_CENTRAL.minerales;
+                const produccionTotal = {
+                    minerales: (produccionBase.minerales || 0) + produccionCentrales.minerales,
+                    energia: (produccionBase.energia || 0) + produccionCentrales.energia,
+                    cristales: (produccionBase.cristales || 0) + produccionCentrales.cristales,
+                };
 
-                jugador.recursos.energia += sistema.produccion.energia
-                    + minas * 5
-                    + centrales * PRODUCCION_CENTRAL.energia;
+                jugador.recursos.minerales += produccionTotal.minerales;
+                jugador.recursos.energia += produccionTotal.energia;
+                jugador.recursos.cristales += produccionTotal.cristales;
 
-                jugador.recursos.cristales += sistema.produccion.cristales
-                    + centrales * PRODUCCION_CENTRAL.cristales;
+                sistema.recursos = sistema.recursos || { minerales: 0, energia: 0, cristales: 0 };
+                sistema.recursos.minerales += produccionTotal.minerales;
+                sistema.recursos.energia += produccionTotal.energia;
+                sistema.recursos.cristales += produccionTotal.cristales;
+
+                sistema.flotas = (sistema.flotas || 0) + astilleros;
             });
         });
 

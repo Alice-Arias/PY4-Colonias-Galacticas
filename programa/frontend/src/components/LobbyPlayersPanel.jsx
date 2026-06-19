@@ -3,8 +3,7 @@ import "../styles/LobbyPlayersPanel.css";
 
 function LobbyPlayersPanel({ lobby, partidaId }) {
 
-    const getInitials = (name) =>
-        name?.slice(0, 2).toUpperCase() ?? "??";
+    const getAvatarSticker = () => "🧑‍🚀";
 
     return (
         <div className="unirse-players-panel">
@@ -39,8 +38,14 @@ function LobbyPlayersPanel({ lobby, partidaId }) {
                                 className="unirse-player-row"
                                 key={j.id}
                             >
-                                <div className="unirse-player-avatar">
-                                    {getInitials(j.nickname)}
+                                <div
+                                    className="unirse-player-avatar"
+                                    title={j.nickname}
+                                    aria-label={`Astronauta de ${j.nickname}`}
+                                >
+                                    <span className="unirse-player-avatar-sticker">
+                                        {getAvatarSticker()}
+                                    </span>
                                 </div>
 
                                 <span className="unirse-player-name">

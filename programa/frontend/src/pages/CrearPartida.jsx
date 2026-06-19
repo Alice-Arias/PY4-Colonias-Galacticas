@@ -4,6 +4,8 @@ import socket from "../services/socket";
 import api from "../services/api";
 import { useNavigate } from "react-router-dom";
 import backgroundLogin from "../assets/backgroundLogin.jpeg";
+import { TEMATICA_OPTIONS, normalizarTematica } from "../utils/tematicas";
+import { obtenerInfoTematica } from "../utils/tematicas";
 
 import { SlEnergy } from "react-icons/sl";
 import { GiMinerals } from "react-icons/gi";
@@ -27,7 +29,9 @@ export default function CrearPartida() {
     const [maxJugadores, setMaxJugadores] = useState(2);
     const [tiempoMax, setTiempoMax] = useState(300);
     const [tiempoEspera, setTiempoEspera] = useState(60);
+    const [porcentajeVictoria, setPorcentajeVictoria] = useState(60);
     const [nivelRecursos, setNivelRecursos] = useState("normal");
+    const [tematica, setTematica] = useState("clasica");
 
     useEffect(() => {
         const el = fxRef.current;
@@ -89,6 +93,8 @@ export default function CrearPartida() {
             maxJugadores: Number(maxJugadores),
             tiempoMax: Number(tiempoMax),
             tiempoEspera: Number(tiempoEspera),
+            porcentajeVictoria: Number(porcentajeVictoria) / 100,
+            tematica: normalizarTematica(tematica),
             recursosIniciales: {
                 bajo: { minerales: 100, energia: 50, cristales: 20 },
                 normal: { minerales: 300, energia: 150, cristales: 50 },
@@ -102,20 +108,24 @@ export default function CrearPartida() {
         socket.once("partida_creada", (partida) => {
             sessionStorage.setItem("partidaId", partida.id);
             localStorage.setItem("partidaId", partida.id);
+            sessionStorage.setItem("partidaTematica", partida.tematica || tematica);
+            localStorage.setItem("partidaTematica", partida.tematica || tematica);
             navigate("/lobby", {
                 state: {
                     partidaId: partida.id,
                     isHost: true,
+                    tematica: partida.tematica || tematica,
                 },
             });
         });
     };
 
     const res = RECURSOS[nivelRecursos];
+    const tema = obtenerInfoTematica(tematica);
 
     return (
         <div
-            className="crear-page"
+            className={`crear-page ${tema.className}`}
             style={{ backgroundImage: `url(${backgroundLogin})` }}
         >
             <div className="crear-bg-fx" ref={fxRef}></div>
@@ -127,6 +137,11 @@ export default function CrearPartida() {
                             ◆ Colonias Galácticas ◆
                         </span>
                         <h1 className="crear-title">Nueva Partida</h1>
+                    </div>
+
+                    <div className="theme-badge" style={{ marginBottom: "1rem" }}>
+                        Vista previa <strong>{tema.label}</strong>
+                        {tema.bonusPts > 0 ? <span>+{tema.bonusPts} ptos</span> : null}
                     </div>
 
                     <div className="crear-cols">
@@ -172,6 +187,25 @@ export default function CrearPartida() {
                                 </select>
                             </div>
                             <div className="crear-form-group">
+                                <label htmlFor="tematica">Temática del juego</label>
+                                <select
+                                    id="tematica"
+                                    className="crear-field"
+                                    value={tematica}
+                                    onChange={(e) => setTematica(e.target.value)}
+                                >
+                                    {TEMATICA_OPTIONS.map((item) => (
+                                        <option key={item.value} value={item.value}>
+                                            {item.label}{item.bonusPts > 0 ? ` (+${item.bonusPts} ptos)` : ""}
+                                        </option>
+                                    ))}
+                                </select>
+                                <small style={{ color: "rgba(160, 205, 235, 0.7)", lineHeight: 1.4 }}>
+                                    La temática cambia la ambientación sin impedir jugar.
+                                    La partida termina por tiempo o cuando un jugador controla el porcentaje fijado de la galaxia.
+                                </small>
+                            </div>
+                            <div className="crear-form-group">
                                 <label htmlFor="maxJugadores">
                                     Máx. jugadores
                                 </label>
@@ -196,7 +230,7 @@ export default function CrearPartida() {
                             </p>
                             <div className="crear-form-group">
                                 <label htmlFor="tiempoMax">
-                                    Tiempo máximo (seg)
+                                    Duración de la partida (seg)
                                 </label>
                                 <input
                                     id="tiempoMax"
@@ -219,6 +253,22 @@ export default function CrearPartida() {
                                     value={tiempoEspera}
                                     onChange={(e) =>
                                         setTiempoEspera(e.target.value)
+                                    }
+                                />
+                            </div>
+                            <div className="crear-form-group">
+                                <label htmlFor="porcentajeVictoria">
+                                    Control para ganar (%)
+                                </label>
+                                <input
+                                    id="porcentajeVictoria"
+                                    type="number"
+                                    min="1"
+                                    max="100"
+                                    className="crear-field"
+                                    value={porcentajeVictoria}
+                                    onChange={(e) =>
+                                        setPorcentajeVictoria(e.target.value)
                                     }
                                 />
                             </div>

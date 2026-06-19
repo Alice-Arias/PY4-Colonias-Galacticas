@@ -1,6 +1,6 @@
 .resource-bar {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: minmax(190px, auto) 1fr auto;
   align-items: center;
   gap: 18px;
   padding: 14px 18px;
@@ -18,7 +18,9 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  min-width: 150px;
+  min-width: 210px;
+    min-width: 0;
+    max-width: 240px;
 }
 
 .player-label,
@@ -34,8 +36,14 @@
   font-size: 20px;
   font-weight: 800;
   letter-spacing: 0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   color: #42f59b;
   text-shadow: 0 0 16px rgba(66, 245, 155, 0.35);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .phase-pill {
@@ -110,23 +118,45 @@
   background: rgba(66, 245, 155, 0.08);
 }
 
+.timer-chip.live {
+  position: relative;
+  border-color: rgba(66, 245, 155, 0.38);
+  background: linear-gradient(180deg, rgba(66, 245, 155, 0.11), rgba(66, 245, 155, 0.05));
+  box-shadow: 0 0 0 1px rgba(66, 245, 155, 0.08), inset 0 0 18px rgba(66, 245, 155, 0.08);
+}
+
 .time-value {
   font-size: 18px;
   font-weight: 800;
   color: #f5fbff;
 }
 
-.settings-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  border: 1px solid rgba(131, 157, 206, 0.2);
-  background: rgba(255, 255, 255, 0.04);
-  color: #dbe6f5;
-  flex-shrink: 0;
+.time-subvalue {
+  font-size: 11px;
+  line-height: 1;
+  color: rgba(214, 224, 255, 0.68);
+}
+
+.sync-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 999px;
+  background: #42f59b;
+  box-shadow: 0 0 12px rgba(66, 245, 155, 0.85);
+  animation: syncPulse 1.25s ease-in-out infinite;
+}
+
+@keyframes syncPulse {
+  0%, 100% {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
 }
 
 @media (max-width: 1200px) {

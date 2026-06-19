@@ -115,6 +115,7 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
     box-shadow:
         0 0 40px rgba(0, 180, 255, 0.08),
         inset 0 0 30px rgba(0, 50, 120, 0.15);
@@ -402,6 +403,25 @@
 }
 .lobby-primary-btn:active { transform: translateY(0); }
 
+.lobby-primary-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    box-shadow: none;
+    transform: none;
+}
+
+.lobby-start-feedback {
+    margin: 0;
+    padding: 0.5rem 0.65rem;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    background: rgba(0, 18, 45, 0.55);
+    color: rgba(197, 232, 255, 0.88);
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+    text-align: center;
+}
+
 .lobby-secondary-btn {
     width: 100%;
     padding: 0.65rem 1rem;
@@ -427,6 +447,7 @@
 /* Hace que LobbyPlayersPanel llene el espacio vertical disponible */
 .lobby-card .unirse-players-panel {
     flex: 1;
+    min-height: 0;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -531,9 +552,9 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
-    margin: 0.8rem 0 1.2rem;
-    padding: 1rem;
+    gap: 0.3rem;
+    margin: 0.5rem 0 0.8rem;
+    padding: 0.6rem 0.8rem;
     background: rgba(0, 212, 255, 0.10);
     border: 1px solid rgba(0, 212, 255, 0.30);
     border-radius: 8px;
@@ -541,7 +562,7 @@
 }
 
 .lobby-timer-label {
-    font-size: 0.70rem;
+    font-size: 0.62rem;
     letter-spacing: 0.15em;
     color: rgba(0, 212, 255, 0.65);
     text-transform: uppercase;
@@ -551,21 +572,21 @@
 .lobby-timer-display {
     display: flex;
     align-items: center;
-    gap: 0.8rem;
+    gap: 0.55rem;
 }
 
 .lobby-timer-icon {
-    font-size: 1.4rem;
+    font-size: 1.05rem;
     color: rgba(0, 212, 255, 0.85);
 }
 
 .lobby-timer-text {
     font-family: 'Orbitron', monospace;
-    font-size: 1.4rem;
+    font-size: 1.08rem;
     font-weight: 700;
     color: #00ff00;
-    letter-spacing: 0.1em;
-    text-shadow: 0 0 12px rgba(0, 255, 0, 0.55);
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 9px rgba(0, 255, 0, 0.5);
 }
 
 @media (max-width: 540px) {

@@ -62,7 +62,10 @@ export function getPlayerState(estado, playerName, playerSocketId) {
     const porSocket = jugadores.find((item) => item.socketId === playerSocketId);
     if (porSocket) return porSocket;
 
-    const jugador = jugadores.find((item) => item.nickname === playerName);
+    const playerNameNormalizado = String(playerName || "").trim().toLowerCase();
+    const jugador = jugadores.find(
+        (item) => String(item.nickname || "").trim().toLowerCase() === playerNameNormalizado
+    );
     return jugador || null;
 }
 
@@ -84,8 +87,8 @@ export function inferSelectedDetails(sistema, playerState) {
         flotas: sistema.flotas,
         instalaciones: {
             Mina: sistema.minas,
-            "Centro Investigación": sistema.centrales,
-            Astillero: sistema.astilleros,
+            "Central de investigación": sistema.centrales,
+            "Astillero de flotas": sistema.astilleros,
             Fortaleza: sistema.fortalezas,
         },
         recursos: sistema.recursos,

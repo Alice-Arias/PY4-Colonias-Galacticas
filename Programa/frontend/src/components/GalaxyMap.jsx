@@ -2,12 +2,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import "../styles/GalaxyMap.css";
 import neutralGalaxyBg from "../assets/backgroundLogin.jpeg";
 
-export default function GalaxyMap({ sistemas = [], onPlanetSelect, selectedId = null, baseId = null }) {
+export default function GalaxyMap({ sistemas = [], onPlanetSelect, selectedId = null, baseId = null, playerId = null, playerName = null, movimientoVisual = null }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const positionsRef = useRef({});
   const bgImageRef = useRef(null);
+  const prevOwnersRef = useRef({});
+  const conquestFxRef = useRef([]);
   const [containerSize, setContainerSize] = useState({ width: 800, height: 640 });
+  const [animTick, setAnimTick] = useState(0);
 
   useEffect(() => {
     const img = new Image();
@@ -20,9 +23,10 @@ export default function GalaxyMap({ sistemas = [], onPlanetSelect, selectedId = 
 
     const updateSize = () => {
       const rect = containerRef.current.getBoundingClientRect();
+      const altoAjustado = Math.max(420, Math.min(rect.height - 24, 520));
       setContainerSize({
         width: Math.max(rect.width - 40, 420),
-        height: Math.max(rect.height - 24, 600),
+        height: altoAjustado,
       });
     };
 
@@ -54,9 +58,41 @@ export default function GalaxyMap({ sistemas = [], onPlanetSelect, selectedId = 
     return map;
   }, [containerSize.height, containerSize.width, sistemas]);
 
+  const graphStateToken = useMemo(
+    () => sistemas
+      .map((s) => `${s.id}:${s.propietarioId || "n"}:${s.flotas || 0}:${s.bajoAtaque ? 1 : 0}`)
+      .join("|"),
+    [sistemas]
+  );
+
   useEffect(() => {
     positionsRef.current = positions;
   }, [positions]);
+
+  useEffect(() => {
+    const id = setInterval(() => setAnimTick((prev) => prev + 1), 40);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    const now = Date.now();
+    const prevOwners = prevOwnersRef.current;
+    const nextOwners = {};
+
+    sistemas.forEach((sistema) => {
+      const ownerKey = sistema.propietarioId || String(sistema.propietario || "").toLowerCase() || "neutral";
+      const previousOwner = prevOwners[sistema.id];
+
+      if (previousOwner && previousOwner !== ownerKey) {
+        conquestFxRef.current.push({ id: sistema.id, startedAt: now });
+      }
+
+      nextOwners[sistema.id] = ownerKey;
+    });
+
+    prevOwnersRef.current = nextOwners;
+    conquestFxRef.current = conquestFxRef.current.filter((fx) => now - fx.startedAt < 1500);
+  }, [sistemas]);
 
   useEffect(() => {
     if (!canvasRef.current || sistemas.length === 0) return;
@@ -149,6 +185,36 @@ export default function GalaxyMap({ sistemas = [], onPlanetSelect, selectedId = 
       ctx.stroke();
     });
 
+    if (movimientoVisual?.origenId && movimientoVisual?.destinoId) {
+      const fromPos = positions[movimientoVisual.origenId];
+      const toPos = positions[movimientoVisual.destinoId];
+      if (fromPos && toPos) {
+        const esAtaque = movimientoVisual.tipo === "ataque";
+        const color = esAtaque ? "#ff8a8a" : "#8affc5";
+
+        ctx.strokeStyle = esAtaque ? "rgba(255, 104, 104, 0.9)" : "rgba(66, 245, 155, 0.9)";
+        ctx.lineWidth = 4;
+        ctx.setLineDash([10, 8]);
+        ctx.lineDashOffset = -(animTick * 3);
+        ctx.beginPath();
+        ctx.moveTo(fromPos.x, fromPos.y);
+        ctx.lineTo(toPos.x, toPos.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        const progreso = ((animTick % 25) / 25);
+        const x = fromPos.x + (toPos.x - fromPos.x) * progreso;
+        const y = fromPos.y + (toPos.y - fromPos.y) * progreso;
+        ctx.fillStyle = color;
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+    }
+
     // Segunda pasada: línea principal recta y nítida.
     ctx.strokeStyle = "rgba(124, 204, 255, 0.98)";
     ctx.lineWidth = 2.6;
@@ -165,6 +231,8 @@ export default function GalaxyMap({ sistemas = [], onPlanetSelect, selectedId = 
 
     ctx.lineCap = "butt";
     ctx.shadowBlur = 0;
+    const now = Date.now();
+    conquestFxRef.current = conquestFxRef.current.filter((fx) => now - fx.startedAt < 1500);
 
     sistemas.forEach((sistema) => {
       const pos = positions[sistema.id];
@@ -172,42 +240,104 @@ export default function GalaxyMap({ sistemas = [], onPlanetSelect, selectedId = 
 
       const isSelected = selectedId === sistema.id;
       const isBase = baseId === sistema.id;
-      const isConquered = Boolean(sistema.propietarioId);
-      const radius = isSelected ? 29 : isBase ? 25 : 21;
+      const propietarioId = String(sistema.propietarioId || "").trim();
+      const jugadorId = String(playerId || "").trim();
+      const propietarioNombre = String(sistema.propietario || "").trim().toLowerCase();
+      const jugadorNombre = String(playerName || "").trim().toLowerCase();
+      const isMine = (propietarioId && jugadorId && propietarioId === jugadorId)
+        || (propietarioNombre && jugadorNombre && propietarioNombre === jugadorNombre);
+      const isEnemy = !isMine && Boolean(sistema.propietarioId || sistema.propietario);
+      const isAttacked = sistema.bajoAtaque;
+      const ringRadius = isSelected ? 22 : isBase ? 20 : 18;
+      const coreRadius = isSelected ? 12 : isBase ? 11 : 10;
+      const glowRadius = ringRadius + (isSelected ? 14 : 12);
+      const conquestFx = conquestFxRef.current.filter((fx) => fx.id === sistema.id);
+
+      const tone = {
+        hex: "#f7fbff",
+        rgb: "247, 251, 255",
+      };
+
+      if (isMine && isBase) {
+        tone.hex = "#ffd166";
+        tone.rgb = "255, 209, 102";
+      } else if (isMine) {
+        tone.hex = "#3ce77b";
+        tone.rgb = "60, 231, 123";
+      } else if (isEnemy) {
+        tone.hex = "#ff5b5b";
+        tone.rgb = "255, 91, 91";
+      }
+
+      if (isAttacked) {
+        tone.hex = "#ff9d00";
+        tone.rgb = "255, 157, 0";
+      }
 
       if (isSelected) {
         ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
         ctx.beginPath();
-        ctx.arc(pos.x, pos.y, radius + 10, 0, Math.PI * 2);
+        ctx.arc(pos.x, pos.y, glowRadius + 7, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      if (isBase) {
-        ctx.strokeStyle = "rgba(255, 209, 102, 0.95)";
-        ctx.lineWidth = 2.2;
+      const haloGradient = ctx.createRadialGradient(pos.x, pos.y, coreRadius, pos.x, pos.y, glowRadius);
+      haloGradient.addColorStop(0, `rgba(${tone.rgb}, 0.44)`);
+      haloGradient.addColorStop(0.58, `rgba(${tone.rgb}, 0.24)`);
+      haloGradient.addColorStop(1, `rgba(${tone.rgb}, 0)`);
+      ctx.fillStyle = haloGradient;
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, glowRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      if (isAttacked) {
+        const pulse = (Math.sin(animTick * 0.35) + 1) / 2;
+        const attackRadius = ringRadius + 8 + pulse * 5;
+        ctx.strokeStyle = `rgba(255, 95, 95, ${0.35 + pulse * 0.35})`;
+        ctx.lineWidth = 1.4 + pulse * 1.1;
         ctx.beginPath();
-        ctx.arc(pos.x, pos.y, radius + 6, 0, Math.PI * 2);
+        ctx.arc(pos.x, pos.y, attackRadius, 0, Math.PI * 2);
         ctx.stroke();
       }
 
-      let color = "#3ce77b";
-      if (isConquered) color = "#ff5b5b";
-      if (isBase) color = "#ffd166";
+      conquestFx.forEach((fx, index) => {
+        const elapsed = now - fx.startedAt;
+        const progress = Math.max(0, Math.min(1, elapsed / 1500));
+        const waveRadius = ringRadius + 4 + progress * 26 + index * 2;
+        const alpha = (1 - progress) * 0.55;
 
-      ctx.fillStyle = color;
-      ctx.shadowColor = color;
-      ctx.shadowBlur = isBase || isSelected ? 18 : 12;
+        if (alpha <= 0) return;
+
+        ctx.strokeStyle = `rgba(${tone.rgb}, ${alpha})`;
+        ctx.lineWidth = 1.2 + (1 - progress) * 1.4;
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, waveRadius, 0, Math.PI * 2);
+        ctx.stroke();
+      });
+
+      ctx.strokeStyle = `rgba(${tone.rgb}, ${isSelected ? "0.9" : "0.72"})`;
+      ctx.lineWidth = isSelected ? 2.8 : 2.2;
       ctx.beginPath();
-      ctx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-
-      ctx.strokeStyle = isSelected ? "#ffffff" : "rgba(255,255,255,0.55)";
-      ctx.lineWidth = isSelected ? 3 : 1;
+      ctx.arc(pos.x, pos.y, ringRadius, 0, Math.PI * 2);
       ctx.stroke();
 
-      ctx.fillStyle = "#d9f4ff";
-      ctx.font = "14px Segoe UI";
+      ctx.strokeStyle = `rgba(${tone.rgb}, 0.36)`;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, ringRadius - 4, 0, Math.PI * 2);
+      ctx.stroke();
+
+      const coreGradient = ctx.createRadialGradient(pos.x - 2, pos.y - 3, 2, pos.x, pos.y, coreRadius + 2);
+      coreGradient.addColorStop(0, "#ffffff");
+      coreGradient.addColorStop(0.65, "#f5f9ff");
+      coreGradient.addColorStop(1, `rgba(${tone.rgb}, 0.88)`);
+      ctx.fillStyle = coreGradient;
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, coreRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#11233a";
+      ctx.font = "12px Segoe UI";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText(iconByType[sistema.tipo] || "⬢", pos.x, pos.y);
@@ -215,26 +345,24 @@ export default function GalaxyMap({ sistemas = [], onPlanetSelect, selectedId = 
       if (isBase) {
         ctx.fillStyle = "#ffe08a";
         ctx.font = "bold 11px Segoe UI";
-        ctx.fillText("BASE", pos.x, pos.y - radius - 14);
-      } else if (isConquered) {
-        ctx.fillStyle = "#ffb3b3";
-        ctx.font = "bold 10px Segoe UI";
-        ctx.fillText("CONQUISTADO", pos.x, pos.y - radius - 14);
+        ctx.fillText("BASE", pos.x, pos.y - ringRadius - 14);
       }
 
       ctx.fillStyle = "#eaf4ff";
       ctx.font = "bold 14px Segoe UI";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(sistema.nombre, pos.x, pos.y + radius + 20);
+      ctx.fillText(sistema.nombre, pos.x, pos.y + ringRadius + 18);
     });
-  }, [baseId, positions, selectedId, sistemas]);
+  }, [baseId, positions, selectedId, sistemas, playerId, graphStateToken, movimientoVisual, animTick]);
 
   const handleCanvasClick = (e) => {
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
     const nodePositions = positionsRef.current;
 
     for (const sistema of sistemas) {
@@ -254,20 +382,24 @@ export default function GalaxyMap({ sistemas = [], onPlanetSelect, selectedId = 
       <div className="map-header">
         <div>
           <h2>Mapa Galáctico</h2>
-          <p className="map-subtitle">Cada jugador arranca en una base distinta. Amarillo: base, verde: neutral, rojo: conquistado.</p>
+          <p className="map-subtitle">Selecciona nodo y ejecuta acciones. La trayectoria de flota se dibuja al enviar.</p>
         </div>
         <div className="legend">
           <div className="legend-item">
-            <span className="legend-color" style={{ backgroundColor: "#ffd166" }}></span>
-            <span>Base inicial</span>
-          </div>
-          <div className="legend-item">
-            <span className="legend-color" style={{ backgroundColor: "#33d17a" }}></span>
+            <span className="legend-color" style={{ backgroundColor: "#f7fbff" }}></span>
             <span>Neutral</span>
           </div>
           <div className="legend-item">
+            <span className="legend-color" style={{ backgroundColor: "#ffd166" }}></span>
+            <span>Tu base</span>
+          </div>
+          <div className="legend-item">
+            <span className="legend-color" style={{ backgroundColor: "#33d17a" }}></span>
+            <span>Tus sistemas</span>
+          </div>
+          <div className="legend-item">
             <span className="legend-color" style={{ backgroundColor: "#ff5b5b" }}></span>
-            <span>Conquistado</span>
+            <span>Enemigo</span>
           </div>
         </div>
       </div>

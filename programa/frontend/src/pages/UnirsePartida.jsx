@@ -36,13 +36,40 @@ export default function UnirsePartida() {
     }, []);
 
     useEffect(() => {
+        let timeoutCarga = null;
+
+        const solicitarPartidas = () => {
+            setCargando(true);
+            socket.emit("get_available_games");
+            if (timeoutCarga) clearTimeout(timeoutCarga);
+            timeoutCarga = setTimeout(() => {
+                setCargando(false);
+                setError("No se pudo cargar el lobby. Verifica que el backend esté activo.");
+            }, 5000);
+        };
+
         // Solicitar partidas disponibles al conectar
-        socket.emit("get_available_games");
+        if (socket.connected) {
+            solicitarPartidas();
+        }
+
+        socket.on("connect", solicitarPartidas);
+
+        socket.on("connect_error", () => {
+            setCargando(false);
+            setError("No se pudo conectar al servidor de partidas.");
+        });
+
+        socket.on("disconnect", () => {
+            setCargando(false);
+            setError("Se perdió la conexión con el servidor.");
+        });
 
         socket.on("available_games", (partidasDisponibles) => {
             setPartidas(partidasDisponibles);
             setCargando(false);
             setError("");
+            if (timeoutCarga) clearTimeout(timeoutCarga);
         });
 
         socket.on("tiempo_restante_update", (data) => {
@@ -55,16 +82,22 @@ export default function UnirsePartida() {
         });
 
         socket.on("partida_expirada", () => {
-            socket.emit("get_available_games");
+            solicitarPartidas();
         });
 
         // Actualizar partidas cada 2 segundos
         const intervalo = setInterval(() => {
-            socket.emit("get_available_games");
+            if (socket.connected) {
+                solicitarPartidas();
+            }
         }, 2000);
 
         return () => {
             clearInterval(intervalo);
+            if (timeoutCarga) clearTimeout(timeoutCarga);
+            socket.off("connect", solicitarPartidas);
+            socket.off("connect_error");
+            socket.off("disconnect");
             socket.off("available_games");
             socket.off("tiempo_restante_update");
             socket.off("partida_expirada");
@@ -72,12 +105,7 @@ export default function UnirsePartida() {
     }, []);
 
     const unirse = (partidaId) => {
-        socket.emit("join_game", {
-            partidaId,
-            nickname,
-        });
-
-        socket.once("joined_game", (partida) => {
+        const handleJoinedGame = (partida) => {
             sessionStorage.setItem("partidaId", partida.id);
             localStorage.setItem("partidaId", partida.id);
             navigate("/lobby", {
@@ -87,6 +115,18 @@ export default function UnirsePartida() {
                     lobbyInicial: partida,
                 },
             });
+        };
+
+        socket.once("joined_game", handleJoinedGame);
+        socket.once("join_error", (data) => {
+            setError(data?.mensaje || "No se pudo unir a la partida.");
+            setCargando(false);
+            socket.off("joined_game", handleJoinedGame);
+        });
+
+        socket.emit("join_game", {
+            partidaId,
+            nickname,
         });
     };
 

@@ -113,7 +113,7 @@ class Universo {
 const universo = new Universo();
 
 class Partida {
-  constructor({ id, nombre, maxJugadores, host, galaxia, tiempoEspera = 300 }) {
+  constructor({ id, nombre, maxJugadores, host, galaxia, tiempoEspera = 300, tiempoMax = 300, tematica = "clasica", recursosIniciales = null }) {
     this.id = id;
     this.nombre = nombre;
     this.maxJugadores = maxJugadores;
@@ -121,10 +121,19 @@ class Partida {
     this.host = host;
     this.jugadores = [];
     this.galaxia = galaxia;
+    this.tematica = tematica;
     this.intervaloProduccion = null;
     this.tiempoEspera = tiempoEspera;
     this.tiempoCreacion = Date.now();
     this.tiempoExpiracion = Date.now() + tiempoEspera * 1000;
+    this.tiempoMax = tiempoMax;
+    this.tiempoInicioJuego = null;
+    this.tiempoFinJuego = null;
+    this.recursosIniciales = {
+      minerales: Number(recursosIniciales?.minerales) || 300,
+      energia: Number(recursosIniciales?.energia) || 150,
+      cristales: Number(recursosIniciales?.cristales) || 50,
+    };
   }
 
   obtenerTiempoRestante() {
@@ -146,7 +155,21 @@ class Partida {
   }
 
   puedeIniciar(socketId) {
-    return this.host === socketId && this.jugadores.length >= 2;
+    return this.host === socketId && this.jugadores.length >= this.maxJugadores;
+  }
+
+  marcarInicioJuego() {
+    this.tiempoInicioJuego = Date.now();
+    this.tiempoFinJuego = this.tiempoInicioJuego + Math.max(1, this.tiempoMax || 0) * 1000;
+  }
+
+  obtenerTiempoJuegoRestante() {
+    if (!this.tiempoFinJuego) return Math.max(0, Math.floor(this.tiempoMax || 0));
+    return Math.max(0, Math.floor((this.tiempoFinJuego - Date.now()) / 1000));
+  }
+
+  estaFinalizadaPorTiempo() {
+    return Boolean(this.tiempoFinJuego) && this.obtenerTiempoJuegoRestante() <= 0;
   }
 
   iniciarProduccion(intervalo = 20000) {
