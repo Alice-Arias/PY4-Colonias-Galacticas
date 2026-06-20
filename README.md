@@ -16,7 +16,7 @@ Sistema desarrollado utilizando **Node.js**, **Express**, **Socket.IO** y **Reac
 
 ---
 
-# 📚 Información Académica
+#  Información Académica
 
 | Campo    | Información               |
 | -------- | ------------------------- |
