@@ -1,0 +1,60 @@
+.theme-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.72rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 212, 255, 0.22);
+  background: rgba(0, 18, 45, 0.55);
+  color: #c5e8ff;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.theme-badge strong {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.72rem;
+}
+
+.theme-clasica::after,
+.theme-aurora::after,
+.theme-imperial::after,
+.theme-abisal::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.theme-clasica::after {
+  background: radial-gradient(circle at 20% 20%, rgba(0, 212, 255, 0.09), transparent 34%), radial-gradient(circle at 80% 80%, rgba(87, 211, 92, 0.08), transparent 30%);
+}
+
+.theme-aurora::after {
+  background: radial-gradient(circle at 18% 16%, rgba(80, 240, 255, 0.16), transparent 28%), radial-gradient(circle at 82% 18%, rgba(123, 92, 255, 0.12), transparent 34%), linear-gradient(135deg, rgba(10, 34, 56, 0.12), rgba(40, 0, 65, 0.12));
+}
+
+.theme-imperial::after {
+  background: radial-gradient(circle at 20% 20%, rgba(232, 184, 50, 0.16), transparent 30%), radial-gradient(circle at 82% 22%, rgba(185, 43, 43, 0.12), transparent 32%), linear-gradient(135deg, rgba(55, 18, 18, 0.10), rgba(52, 42, 8, 0.10));
+}
+
+.theme-abisal::after {
+  background: radial-gradient(circle at 22% 20%, rgba(52, 226, 195, 0.14), transparent 30%), radial-gradient(circle at 78% 78%, rgba(0, 212, 255, 0.10), transparent 32%), linear-gradient(135deg, rgba(0, 35, 39, 0.12), rgba(2, 12, 28, 0.16));
+}
+
+.theme-aurora .theme-badge {
+  border-color: rgba(123, 92, 255, 0.35);
+  color: #d9d1ff;
+}
+
+.theme-imperial .theme-badge {
+  border-color: rgba(232, 184, 50, 0.4);
+  color: #f3d27a;
+}
+
+.theme-abisal .theme-badge {
+  border-color: rgba(52, 226, 195, 0.4);
+  color: #b8fff2;
+}
