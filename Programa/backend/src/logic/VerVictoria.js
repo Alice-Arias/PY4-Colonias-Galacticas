@@ -33,7 +33,10 @@ class VerVictoria {
 
         // 1) un jugador controla el porcentaje configurado de sistemas
         const ganadorPorcentaje = jugadoresActivos.find((jugador) => {
-            const control = jugador.sistemas.size / sistemasTotales;
+            const sistemasControladosReales = Array.from(this.sistemas.values())
+                .filter((sistema) => sistema.propietarioId === jugador.socketId)
+                .length;
+            const control = sistemasControladosReales / sistemasTotales;
             return control >= this.porcentajeVictoria;
         });
 
@@ -83,6 +86,9 @@ class VerVictoria {
     // ======================================================
     _finalizarPartida(motivo) {
         this.partidaFinalizada = true;
+        const tiempoJuego = this.partida?.tiempoInicioJuego
+            ? Math.max(0, Math.floor((Date.now() - this.partida.tiempoInicioJuego) / 1000))
+            : Math.max(0, Math.floor(this.partida?.tiempoMax || 0));
 
         const ranking = Array.from(this.jugadores.values())
             .map((jugador) => ({
@@ -105,18 +111,30 @@ class VerVictoria {
             tiempo: `Tiempo agotado. ${this.ganador} lidera por puntaje`,
         };
 
+        const ganadorRanking = ranking[0] || null;
+        const resumenFinal = {
+            motivo,
+            motivoTexto: motivoTexto[motivo] || motivo,
+            partidaId: this.partida?.id,
+            galaxia: this.partida?.galaxia?.nombre || "Desconocida",
+            tematica: this.partida?.tematica || "clasica",
+            tiempoJuego,
+            ganador: this.ganador,
+            sistemasControlados: ganadorRanking?.sistemasConquistados || 0,
+            recursosAcumulados: ganadorRanking?.recursos || { minerales: 0, energia: 0, cristales: 0 },
+            ranking,
+        };
+
         if (global.io && this.partida?.id) {
             global.io.to(this.partida.id).emit("game_over", {
-                motivo,
-                motivoTexto: motivoTexto[motivo] || motivo,
-                ganador: this.ganador,
-                ranking,
+                ...resumenFinal,
+                tiempoMax: this.partida?.tiempoMax || 0,
                 eventos: this.onObtenerEventos ? this.onObtenerEventos() : [],
             });
         }
 
         if (this.onPartidaFinalizada) {
-            this.onPartidaFinalizada();
+            this.onPartidaFinalizada(resumenFinal);
         }
     }
 
@@ -128,7 +146,10 @@ class VerVictoria {
     // OBJETIVO: calcular puntaje para ranking (sistemas x5000 + recursos + infraestructura)
     // ======================================================
     _calcularPuntaje(jugador) {
-        const puntajeSistemas = jugador.sistemas.size * 5000;
+        const sistemasControladosReales = Array.from(this.sistemas.values())
+            .filter((sistema) => sistema.propietarioId === jugador.socketId)
+            .length;
+        const puntajeSistemas = sistemasControladosReales * 5000;
 
         const puntajeRecursos =
             (jugador.recursos.minerales * 1) +

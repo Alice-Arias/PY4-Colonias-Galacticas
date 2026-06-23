@@ -17,9 +17,11 @@ class LogicaJuego {
         this.partida = partida;
         this.estado = "jugando";
         this.eventos = [];
+        this.onPartidaFinalizada = options.onPartidaFinalizada || null;
         this.inicioHabilitado = false;
         this.inicioEnProceso = false;
         this.intervaloCuentaRegresivaInicio = null;
+        this.intervaloFinPartida = null;
 
         // Mapas compartidos
         this.jugadores = new Map();
@@ -62,11 +64,19 @@ class LogicaJuego {
         };
 
         // Victoria notifica cuando la partida termina
-        this.gestorVictoria.onPartidaFinalizada = () => {
+        this.gestorVictoria.onPartidaFinalizada = (resumenFinal) => {
             this.estado = "finalizada";
             this.gestorProduccion.detener();
             if (this.intervaloCuentaRegresivaInicio) {
                 clearInterval(this.intervaloCuentaRegresivaInicio);
+            }
+            if (this.intervaloFinPartida) {
+                clearInterval(this.intervaloFinPartida);
+                this.intervaloFinPartida = null;
+            }
+
+            if (this.onPartidaFinalizada) {
+                this.onPartidaFinalizada(resumenFinal);
             }
         };
 
@@ -107,16 +117,18 @@ class LogicaJuego {
     _inicializarJugadores(jugadoresData) {
         this.jugadores.clear();
 
+        const recursosIniciales = {
+            minerales: Number(this.partida?.recursosIniciales?.minerales) || 300,
+            energia: Number(this.partida?.recursosIniciales?.energia) || 150,
+            cristales: Number(this.partida?.recursosIniciales?.cristales) || 50,
+        };
+
         jugadoresData.forEach((jugador) => {
             this.jugadores.set(jugador.socketId, {
                 socketId: jugador.socketId,
                 nickname: jugador.nickname,
                 sistemaInicialId: null,
-                recursos: {
-                    minerales: 300,
-                    energia: 150,
-                    cristales: 50,
-                },
+                recursos: { ...recursosIniciales },
                 sistemas: new Set(),
                 sistemasControlados: 0,
                 eliminado: false,
@@ -135,8 +147,44 @@ class LogicaJuego {
         const jugadores = Array.from(this.jugadores.values());
         const sistemas  = Array.from(this.sistemas.values());
 
+        // Mezcla aleatoria para que cada partida asigne bases distintas
+        // sin repetir nodos entre jugadores.
+        for (let i = sistemas.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [sistemas[i], sistemas[j]] = [sistemas[j], sistemas[i]];
+        }
+
+        const seleccionados = [];
+        const usados = new Set();
+
+        // Preferir bases que no sean vecinas directas entre sí.
+        for (const candidato of sistemas) {
+            if (seleccionados.length >= jugadores.length) break;
+            const esVecinoDeSeleccionado = seleccionados.some((base) => {
+                const vecinosCandidato = this.rutas.get(candidato.id);
+                const vecinosBase = this.rutas.get(base.id);
+                return Boolean(
+                    vecinosCandidato?.has(base.id) || vecinosBase?.has(candidato.id)
+                );
+            });
+
+            if (esVecinoDeSeleccionado) continue;
+            seleccionados.push(candidato);
+            usados.add(candidato.id);
+        }
+
+        // Fallback: si no hay suficientes no-vecinos (mapa denso), completar sin repetir.
+        if (seleccionados.length < jugadores.length) {
+            for (const candidato of sistemas) {
+                if (seleccionados.length >= jugadores.length) break;
+                if (usados.has(candidato.id)) continue;
+                seleccionados.push(candidato);
+                usados.add(candidato.id);
+            }
+        }
+
         jugadores.forEach((jugador, index) => {
-            const sistemaBase = sistemas[index];
+            const sistemaBase = seleccionados[index];
             if (!sistemaBase) return;
 
             jugador.sistemaInicialId = sistemaBase.id;
@@ -159,18 +207,53 @@ class LogicaJuego {
     }
 
     // ======================================================
+    // NOMBRE: iniciarControlTiempoPartida
+    // ENTRADA: sin entrada explícita
+    // SALIDA: intervalo que finaliza la partida cuando se agota el tiempo
+    // RESTRICCIONES: llamar una vez por partida activa
+    // OBJETIVO: cerrar automáticamente la partida al llegar a cero
+    // ======================================================
+    iniciarControlTiempoPartida() {
+        if (this.intervaloFinPartida) {
+            clearInterval(this.intervaloFinPartida);
+        }
+
+        this.intervaloFinPartida = setInterval(() => {
+            if (!this.partida?.estaFinalizadaPorTiempo?.()) return;
+            this.gestorVictoria.finalizarPorTiempo();
+            this.detener();
+        }, 1000);
+    }
+
+    // ======================================================
     // NOMBRE: iniciarConTeclaU
     // ENTRADA: socketId del jugador que presiona U
     // SALIDA: objeto { exito, mensaje } + countdown emitido a todos
     // RESTRICCIONES: solo una vez por partida, partida no finalizada
     // OBJETIVO: habilitar el inicio real del juego con cuenta regresiva
     // ======================================================
-    iniciarConTeclaU(socketId) {
+    iniciarConTeclaU(socketId, nickname = "") {
         if (this.estado === "finalizada") {
             return { exito: false, mensaje: "La partida ya finalizó" };
         }
 
-        const jugador = this.jugadores.get(socketId);
+        let jugador = this.jugadores.get(socketId);
+
+        // Fallback: si el socket cambió (reconexión), intentar identificar por nickname.
+        if (!jugador && nickname) {
+            const normalizado = String(nickname).trim().toLowerCase();
+            for (const [socketAnterior, candidato] of this.jugadores.entries()) {
+                if (String(candidato?.nickname || "").trim().toLowerCase() !== normalizado) continue;
+                jugador = candidato;
+                if (socketAnterior !== socketId) {
+                    this.jugadores.delete(socketAnterior);
+                    jugador.socketId = socketId;
+                    this.jugadores.set(socketId, jugador);
+                }
+                break;
+            }
+        }
+
         if (!jugador) {
             return { exito: false, mensaje: "Jugador no encontrado" };
         }
@@ -280,7 +363,22 @@ class LogicaJuego {
             this.gestorCombates
         );
 
-        if (resultado.exito && !resultado.enCombate) {
+        if (resultado.exito && resultado.conquistado) {
+            const jugador = this.jugadores.get(socketId);
+            const destino = this.sistemas.get(destinoId);
+            this._registrarEvento("owner_change", {
+                jugador: jugador?.nickname || socketId,
+                mensaje: `tomó el control de ${destino?.nombre || destinoId}`,
+                color: "#ff6b6b",
+            });
+            this._registrarEvento("conquest", {
+                jugador: jugador?.nickname || socketId,
+                mensaje: `conquistó ${destino?.nombre || destinoId} sin resistencia`,
+                color: "#00ff88",
+            });
+            this._emitirEstado();
+            this.gestorVictoria.evaluarVictoria();
+        } else if (resultado.exito && !resultado.enCombate) {
             const jugador = this.jugadores.get(socketId);
             const origen  = this.sistemas.get(origenId);
             const destino = this.sistemas.get(destinoId);
@@ -301,16 +399,24 @@ class LogicaJuego {
     // ENTRADA: socketId atacante, origenId, destinoId
     // SALIDA: resultado del ataque iniciado
     // RESTRICCIONES: sistema origen propio, sistema destino enemigo
-    // OBJETIVO: iniciar un ataque directo sin especificar cantidad (usa todas las flotas)
+    // OBJETIVO: iniciar un ataque directo con la cantidad de flotas indicada
     // ======================================================
-    atacar(socketId, origenId, destinoId) {
+    atacar(socketId, origenId, destinoId, cantidad) {
         const origen = this.sistemas.get(origenId);
         if (!origen) return { exito: false, mensaje: "Sistema origen no encontrado" };
 
-        const todasLasFlotas = origen.flotas || 0;
-        if (todasLasFlotas <= 0) return { exito: false, mensaje: "No tienes flotas en ese sistema" };
+        const flotasSolicitadas = Math.floor(Number(cantidad) || 0) || (origen.flotas || 0);
+        if (flotasSolicitadas <= 0) return { exito: false, mensaje: "No tienes flotas en ese sistema" };
 
-        return this.enviarFlotas(socketId, origenId, destinoId, todasLasFlotas);
+        return this.gestorFlotas.enviarFlotas(
+            socketId,
+            origenId,
+            destinoId,
+            flotasSolicitadas,
+            this.inicioHabilitado,
+            this.gestorCombates,
+            true
+        );
     }
 
     // ======================================================
@@ -363,6 +469,10 @@ class LogicaJuego {
     // OBJETIVO: sincronizar clientes en tiempo real
     // ======================================================
     obtenerEstadoPartida() {
+        // Reconciliar ownership real antes de serializar para evitar desfaces
+        // entre jugador.sistemas y la propiedad efectiva de los nodos.
+        this._reconciliarControlJugadores();
+
         const sistemas = Array.from(this.sistemas.values()).map((sistema) => ({
             ...sistema,
             controladoPor: sistema.propietario,
@@ -383,6 +493,8 @@ class LogicaJuego {
         return {
             id: this.partida.id,
             nombre: this.partida.nombre,
+            tematica: this.partida.tematica,
+            porcentajeVictoria: Math.round((this.partida?.porcentajeVictoria || 0.6) * 100),
             galaxia: {
                 nombre: this.partida.galaxia?.nombre,
                 sistemas,
@@ -390,6 +502,7 @@ class LogicaJuego {
             },
             tiempoProduccionRestante: this.gestorProduccion.tiempoRestante,
             intervaloProduccionMs: this.gestorProduccion.intervaloMs,
+            tiempoPartidaRestante: this.partida.obtenerTiempoJuegoRestante?.(),
             inicioHabilitado: this.inicioHabilitado,
             inicioEnProceso: this.inicioEnProceso,
             jugadores,
@@ -407,6 +520,10 @@ class LogicaJuego {
     // OBJETIVO: mantener historial de eventos para el frontend
     // ======================================================
     _registrarEvento(tipo, payload) {
+        if (tipo === "production") {
+            return null;
+        }
+
         const evento = {
             tipo,
             hora: new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }),
@@ -444,6 +561,31 @@ class LogicaJuego {
     }
 
     // ======================================================
+    // NOMBRE: _reconciliarControlJugadores
+    // ENTRADA: sin entrada explícita
+    // SALIDA: sincroniza jugador.sistemas y sistemasControlados con el ownership real
+    // RESTRICCIONES: ninguna
+    // OBJETIVO: evitar que el frontend reciba contadores de control desactualizados
+    // ======================================================
+    _reconciliarControlJugadores() {
+        const sistemasPorJugador = new Map();
+
+        for (const sistema of this.sistemas.values()) {
+            if (!sistema?.propietarioId) continue;
+            if (!sistemasPorJugador.has(sistema.propietarioId)) {
+                sistemasPorJugador.set(sistema.propietarioId, []);
+            }
+            sistemasPorJugador.get(sistema.propietarioId).push(sistema.id);
+        }
+
+        for (const jugador of this.jugadores.values()) {
+            const ids = sistemasPorJugador.get(jugador.socketId) || [];
+            jugador.sistemas = new Set(ids);
+            jugador.sistemasControlados = jugador.sistemas.size;
+        }
+    }
+
+    // ======================================================
     // NOMBRE: detener
     // ENTRADA: sin entrada
     // SALIDA: todos los intervalos detenidos
@@ -455,6 +597,10 @@ class LogicaJuego {
         if (this.intervaloCuentaRegresivaInicio) {
             clearInterval(this.intervaloCuentaRegresivaInicio);
             this.intervaloCuentaRegresivaInicio = null;
+        }
+        if (this.intervaloFinPartida) {
+            clearInterval(this.intervaloFinPartida);
+            this.intervaloFinPartida = null;
         }
     }
 }

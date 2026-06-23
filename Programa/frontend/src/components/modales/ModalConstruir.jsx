@@ -6,10 +6,17 @@
 // OBJETIVO: permitir al jugador construir instalaciones en sus sistemas
 // ======================================================
 
-import { getCostosTexto, getCostoConstruccion, puedeConstruir } from "../../utils/combate";
+import { getCostosTexto, getCostoConstruccion, puedeConstruir } from "../../utils/construccion";
 
 const COSTOS_TEXTO = getCostosTexto();
 
+// ==============================================================================================
+// NOMBRE: ModalConstruir
+// ENTRADA: sistema objetivo, recursos y callbacks
+// SALIDA: modal de selección de edificio
+// RESTRICCIONES: valida coste y disponibilidad antes de confirmar
+// OBJETIVO: gestionar construcciones desde la UI
+// ==============================================================================================
 export default function ModalConstruir({
     sistema,
     recursos,
@@ -37,7 +44,9 @@ export default function ModalConstruir({
                         >
                             <span>
                                 {tipo === "central"
-                                    ? "Centro de Investigación"
+                                    ? "Central de investigación"
+                                    : tipo === "astillero"
+                                        ? "Astillero de flotas"
                                     : tipo.charAt(0).toUpperCase() + tipo.slice(1)}
                             </span>
                             <small>{costoTexto}</small>

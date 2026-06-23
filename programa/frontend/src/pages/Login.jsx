@@ -1,3 +1,10 @@
+// ==============================================================================================
+// NOMBRE: Login
+// ENTRADA: interacción del usuario en la pantalla inicial
+// SALIDA: navegación hacia creación, unión o ranking
+// RESTRICCIONES: conservar el flujo de entrada sin estado de partida
+// OBJETIVO: mostrar la pantalla de acceso y navegación inicial
+// ==============================================================================================
 import "../styles/Login.css";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +17,13 @@ import backgroundLogin from "../assets/backgroundLogin.jpeg";
 // RESTRICCIONES: nickname entre 4 y 20 caracteres
 // OBJETIVO: capturar identidad del jugador para la sesión
 // ======================================================
+// ==============================================================================================
+// NOMBRE: Login
+// ENTRADA: interacción del usuario en pantalla de inicio
+// SALIDA: navegación a vistas de juego disponibles
+// RESTRICCIONES: no requiere sesión previa
+// OBJETIVO: servir como puerta de entrada de la aplicación
+// ==============================================================================================
 function Login() {
     const referenciaEfecto = useRef(null);
     const navegar = useNavigate();

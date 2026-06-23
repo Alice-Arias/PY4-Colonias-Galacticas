@@ -1,3 +1,10 @@
+// ==============================================================================================
+// NOMBRE: eslint.config.js
+// ENTRADA: reglas de lint y plugins de ESLint
+// SALIDA: configuración de análisis estático del frontend
+// RESTRICCIONES: mantener compatibilidad con React y hooks
+// OBJETIVO: configurar las reglas de lint del frontend
+// ==============================================================================================
 import js from '@eslint/js'
 import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'

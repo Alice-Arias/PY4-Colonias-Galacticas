@@ -25,7 +25,7 @@ class GestorFlotas {
     // RESTRICCIONES: ruta válida, flotas disponibles, recursos suficientes para el envío
     // OBJETIVO: mover flotas respetando el grafo y las reglas de conquista
     // ======================================================
-    enviarFlotas(socketId, origenId, destinoId, cantidad, inicioHabilitado, gestorCombate) {
+    enviarFlotas(socketId, origenId, destinoId, cantidad, inicioHabilitado, gestorCombate, permitirAtaque = false) {
         const jugador = this.jugadores.get(socketId);
         const origen = this.sistemas.get(origenId);
         const destino = this.sistemas.get(destinoId);
@@ -55,8 +55,14 @@ class GestorFlotas {
             return { exito: false, mensaje: "El sistema destino está siendo atacado" };
         }
 
-        if (!this._hayRutaValida(origenId, destinoId, socketId)) {
+        if (!this._hayRutaValida(origenId, destinoId)) {
             return { exito: false, mensaje: "No existe una ruta válida hacia ese sistema" };
+        }
+
+        // Fallback de robustez: si llega por "enviar_flotas" hacia enemigo,
+        // lo tratamos como conquista automática para no depender del botón correcto en frontend.
+        if (destino.propietarioId && destino.propietarioId !== socketId && !permitirAtaque) {
+            permitirAtaque = true;
         }
 
         const flotasDisponibles = origen.flotas || 0;
@@ -67,11 +73,7 @@ class GestorFlotas {
             };
         }
 
-        const costoEnvio = {
-            minerales: COSTO_ENVIO_POR_FLOTA.minerales * cantidadFlotas,
-            energia:   COSTO_ENVIO_POR_FLOTA.energia   * cantidadFlotas,
-            cristales: COSTO_ENVIO_POR_FLOTA.cristales * cantidadFlotas,
-        };
+        const costoEnvio = this.getCostoEnvio(cantidadFlotas);
 
         const puedePagarEnvio =
             jugador.recursos.minerales >= costoEnvio.minerales &&
@@ -101,25 +103,30 @@ class GestorFlotas {
             };
         }
 
-        // 2) destino enemigo
-        if (destino.propietarioId && destino.propietarioId !== socketId) {
+        // 1.1) destino sin dueño: conquista inmediata
+        if (!destino.propietarioId) {
+            return this._conquistarSistemaNeutral({
+                socketId,
+                destinoId,
+                cantidadFlotas,
+                costoEnvio,
+            });
+        }
+
+        // 2) destino enemigo con conquista automática
+        if (destino.propietarioId && destino.propietarioId !== socketId && permitirAtaque) {
+            if (!gestorCombate) {
+                return { exito: false, mensaje: "No se pudo iniciar la conquista" };
+            }
+
             return gestorCombate.resolverAtaque(socketId, origen, destino, cantidadFlotas, costoEnvio);
         }
 
-        // 3) destino neutro — conquistar
-        destino.bajoAtaque = true;
-        const conquista = gestorCombate.conquistarSistema(socketId, destino.id, {
-            flotasRestantes: cantidadFlotas,
-        });
-        destino.bajoAtaque = false;
-
         return {
             exito: true,
-            mensaje: conquista.conquistado
-                ? `Sistema neutral ${destino.nombre} conquistado`
-                : `No se pudo conquistar ${destino.nombre}`,
-            batalla: conquista,
+            mensaje: `${cantidadFlotas} flotas trasladadas de ${origen.nombre} a ${destino.nombre}`,
             costo: costoEnvio,
+            conquistado: false,
         };
     }
 
@@ -127,36 +134,48 @@ class GestorFlotas {
     // NOMBRE: _hayRutaValida
     // ENTRADA: id origen, id destino, socketId del jugador que mueve
     // SALIDA: booleano indicando si existe ruta transitable
-    // RESTRICCIONES: no atravesar sistemas enemigos (solo el destino puede serlo)
-    // OBJETIVO: validar navegación según las conexiones del grafo
+    // RESTRICCIONES: solo se permite movimiento por ruta directa entre origen y destino
+    // OBJETIVO: validar adyacencia real en el grafo
     // ======================================================
-    _hayRutaValida(origenId, destinoId, socketId) {
+    _hayRutaValida(origenId, destinoId) {
         if (origenId === destinoId) return false;
 
-        const visitados = new Set([origenId]);
-        const cola = [origenId];
+        const vecinosOrigen = this.rutas.get(origenId);
+        if (!vecinosOrigen) return false;
 
-        while (cola.length > 0) {
-            const actual = cola.shift();
-            const vecinos = Array.from(this.rutas.get(actual) || []);
+        return vecinosOrigen.has(destinoId);
+    }
 
-            for (const vecino of vecinos) {
-                if (visitados.has(vecino)) continue;
+    // ======================================================
+    // NOMBRE: _conquistarSistemaNeutral
+    // ENTRADA: socketId del jugador, id del destino, cantidad de flotas y costo
+    // SALIDA: resultado de conquista neutral listo para emitir a la UI
+    // RESTRICCIONES: destino sin propietario y jugador existente
+    // OBJETIVO: encapsular transferencia de ownership neutral en un solo método
+    // ======================================================
+    _conquistarSistemaNeutral({ socketId, destinoId, cantidadFlotas, costoEnvio }) {
+        const jugador = this.jugadores.get(socketId);
+        const destino = this.sistemas.get(destinoId);
 
-                if (vecino !== destinoId) {
-                    const sistemaVecino = this.sistemas.get(vecino);
-                    if (sistemaVecino?.propietarioId && sistemaVecino.propietarioId !== socketId) {
-                        continue;
-                    }
-                }
-
-                if (vecino === destinoId) return true;
-                visitados.add(vecino);
-                cola.push(vecino);
-            }
+        if (!jugador || !destino) {
+            return { exito: false, mensaje: "No se pudo completar la conquista" };
         }
 
-        return false;
+        destino.propietarioId = socketId;
+        destino.propietario = jugador.nickname;
+        destino.flotas = cantidadFlotas;
+        destino.bajoAtaque = false;
+
+        jugador.sistemas.add(destinoId);
+        jugador.sistemasControlados = jugador.sistemas.size;
+
+        return {
+            exito: true,
+            mensaje: `${jugador.nickname} conquistó ${destino.nombre}`,
+            costo: costoEnvio,
+            conquistado: true,
+            nuevoPropietario: jugador.nickname,
+        };
     }
 
     // ======================================================

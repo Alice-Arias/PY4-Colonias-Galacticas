@@ -1,10 +1,23 @@
+// ==============================================================================================
+// NOMBRE: LobbyPlayersPanel
+// ENTRADA: jugadores conectados en la sala
+// SALIDA: panel con la lista de participantes
+// RESTRICCIONES: reflejar el estado del lobby sin modificarlo
+// OBJETIVO: listar los jugadores conectados en la sala
+// ==============================================================================================
 import { PiDiamondsFourLight } from "react-icons/pi";
 import "../styles/LobbyPlayersPanel.css";
 
+// ==============================================================================================
+// NOMBRE: LobbyPlayersPanel
+// ENTRADA: estado de lobby y partidaId
+// SALIDA: listado de jugadores conectados
+// RESTRICCIONES: usa fallback cuando no hay jugadores
+// OBJETIVO: mostrar participantes presentes en sala
+// ==============================================================================================
 function LobbyPlayersPanel({ lobby, partidaId }) {
 
-    const getInitials = (name) =>
-        name?.slice(0, 2).toUpperCase() ?? "??";
+    const getAvatarSticker = () => "🧑‍🚀";
 
     return (
         <div className="unirse-players-panel">
@@ -39,8 +52,14 @@ function LobbyPlayersPanel({ lobby, partidaId }) {
                                 className="unirse-player-row"
                                 key={j.id}
                             >
-                                <div className="unirse-player-avatar">
-                                    {getInitials(j.nickname)}
+                                <div
+                                    className="unirse-player-avatar"
+                                    title={j.nickname}
+                                    aria-label={`Astronauta de ${j.nickname}`}
+                                >
+                                    <span className="unirse-player-avatar-sticker">
+                                        {getAvatarSticker()}
+                                    </span>
                                 </div>
 
                                 <span className="unirse-player-name">

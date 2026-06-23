@@ -1,5 +1,19 @@
+// ==============================================================================================
+// NOMBRE: PlanetPanel
+// ENTRADA: planeta seleccionado y callbacks de acción
+// SALIDA: panel lateral con detalle del sistema
+// RESTRICCIONES: respetar permisos y estado del planeta
+// OBJETIVO: mostrar el detalle y acciones del sistema seleccionado
+// ==============================================================================================
 import "../styles/PlanetPanel.css";
 
+// ==============================================================================================
+// NOMBRE: PlanetPanel
+// ENTRADA: sistema seleccionado y acciones disponibles
+// SALIDA: detalle del planeta y botones de acción
+// RESTRICCIONES: respeta permisos de propietario
+// OBJETIVO: gestionar interacción contextual del sistema activo
+// ==============================================================================================
 export default function PlanetPanel({ planeta, esBaseInicial = false, esPropio = false, onBuild, onSendFleet, onDetails }) {
     if (!planeta) {
         return (
@@ -11,7 +25,7 @@ export default function PlanetPanel({ planeta, esBaseInicial = false, esPropio =
         );
     }
 
-    const { nombre, propietario, produccion, flotas, instalaciones, tipo, recursos, bajoAtaque } = planeta;
+    const { nombre, propietario, produccion, flotas, tipo, recursos, bajoAtaque } = planeta;
 
     return (
         <div className="planet-panel">
@@ -67,28 +81,16 @@ export default function PlanetPanel({ planeta, esBaseInicial = false, esPropio =
                 </div>
 
                 <div className="detail-section">
-                    <h4>Estado actual</h4>
+                    <h4>Flotas del sistema</h4>
                     <div className="status-grid status-grid-single">
                         <div className="status-item">
-                            <span className="status-label">Flotas</span>
+                            <span className="status-label">Unidades disponibles</span>
                             <span className="status-value">{flotas || 0}</span>
                         </div>
                     </div>
-                </div>
-
-                <div className="detail-section">
-                    <h4>Instalaciones</h4>
-                    <div className="installations-list">
-                        {instalaciones && Object.entries(instalaciones).map(([tipo, cantidad]) => (
-                            <div key={tipo} className="installation-item">
-                                <span className="inst-label">{tipo}</span>
-                                <span className="inst-quantity">{cantidad}</span>
-                            </div>
-                        ))}
-                        {!instalaciones || Object.keys(instalaciones).length === 0 && (
-                            <p className="no-installations">Sin instalaciones</p>
-                        )}
-                    </div>
+                    <p className="modal-help" style={{ marginTop: "0.6rem" }}>
+                        Cuando envías flotas, se descuentan de este sistema. Los astilleros las reponen con el tiempo.
+                    </p>
                 </div>
 
                 <div className="action-buttons">
@@ -103,8 +105,8 @@ export default function PlanetPanel({ planeta, esBaseInicial = false, esPropio =
                     <button
                         className="btn btn-fleet"
                         onClick={onSendFleet}
-                        title="Enviar flota"
-                        disabled={!esPropio}
+                        title={!esPropio ? "Solo puedes enviar desde tus sistemas" : (flotas || 0) === 0 ? "Sin flotas disponibles" : "Enviar flota"}
+                        disabled={!esPropio || (flotas || 0) === 0}
                     >
                         ENVIAR FLOTA
                     </button>
