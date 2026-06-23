@@ -1,1 +1,0 @@
-// Archivo eliminado: todas las funciones eran no usadas
