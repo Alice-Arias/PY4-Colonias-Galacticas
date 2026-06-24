@@ -1,1 +1,14 @@
-2026
+Nombre del curso: Lenguajes de Programación
+
+I semestre del 2026
+
+Estudiantes:
+  Heldyis Agüero Espinoza - 2023296812
+  Alice Arias Salazar - 2023104639
+  Yeremi Calvo Porras - 2023083332
+
+Proyecto programado #4
+
+Fecha de entrega: 23/06/2026
+
+Estatus de entrega: Buena
