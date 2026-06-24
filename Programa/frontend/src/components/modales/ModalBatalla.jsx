@@ -1,10 +1,3 @@
-// ======================================================
-// NOMBRE: ModalBatalla
-// ENTRADA: evento de batalla (inicio o resultado) y función para cerrar
-// SALIDA: modal con información del combate en curso o finalizado
-// RESTRICCIONES: eventoBatalla debe existir para renderizar
-// OBJETIVO: notificar a los jugadores sobre combates en tiempo real
-// ======================================================
 
 // ==============================================================================================
 // NOMBRE: ModalBatalla
