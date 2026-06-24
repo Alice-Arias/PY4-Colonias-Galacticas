@@ -111,14 +111,12 @@
     background: rgba(3, 14, 32, 0.92);
     border: 1px solid rgba(0, 210, 255, 0.38);
     border-radius: 12px;
-    padding: 1.8rem 2rem;
+    padding: 1rem 1.5rem;
     position: relative;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    box-shadow:
-        0 0 40px rgba(0, 180, 255, 0.08),
-        inset 0 0 30px rgba(0, 50, 120, 0.15);
+    box-shadow: 0 0 40px rgba(0, 180, 255, 0.08), inset 0 0 30px rgba(0, 50, 120, 0.15);
 }
 
 .lobby-card::before {
@@ -550,21 +548,22 @@
 /* Temporizador */
 .lobby-timer {
     display: flex;
-    flex-direction: column;
+    flex-direction: row; /* Cambiado a fila para ganar mucho espacio vertical */
     align-items: center;
-    gap: 0.3rem;
-    margin: 0.5rem 0 0.8rem;
-    padding: 0.6rem 0.8rem;
-    background: rgba(0, 212, 255, 0.10);
-    border: 1px solid rgba(0, 212, 255, 0.30);
-    border-radius: 8px;
+    justify-content: center;
+    gap: 0.8rem;
+    margin: 0.2rem 0; 
+    padding: 0.4rem 0.6rem; 
+    background: rgba(0, 212, 255, 0.05);
+    border: 1px solid rgba(0, 212, 255, 0.20);
+    border-radius: 6px;
     flex-shrink: 0;
 }
 
 .lobby-timer-label {
-    font-size: 0.62rem;
+    font-size: 0.5rem; 
     letter-spacing: 0.15em;
-    color: rgba(0, 212, 255, 0.65);
+    color: rgba(0, 212, 255, 0.5);
     text-transform: uppercase;
     font-weight: 600;
 }
@@ -572,12 +571,21 @@
 .lobby-timer-display {
     display: flex;
     align-items: center;
-    gap: 0.55rem;
+    gap: 0.3rem;
 }
 
 .lobby-timer-icon {
-    font-size: 1.05rem;
-    color: rgba(0, 212, 255, 0.85);
+    font-size: 0.8rem; 
+    color: rgba(0, 212, 255, 0.7);
+}
+
+.lobby-timer-text {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #00ff00;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 9px rgba(0, 255, 0, 0.3);
 }
 
 .lobby-timer-text {
