@@ -529,7 +529,7 @@ class ServidorJuego {
 new ServidorJuego(app, io);
 
 // Inicio del servidor
-const PORT = Number(process.env.PORT) || 3002;
+const PORT = Number(process.env.PORT) || 3000;
 
 server.on("error", (error) => {
     if (error.code === "EADDRINUSE") {
@@ -540,6 +540,6 @@ server.on("error", (error) => {
     throw error;
 });
 
-server.listen(PORT, "0.0.0.0", () => {
+server.listen(PORT, () => {
     console.log(`Servidor multiplayer listo en puerto ${PORT}`);
 });

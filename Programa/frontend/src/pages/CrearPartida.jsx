@@ -17,7 +17,7 @@ import { obtenerInfoTematica } from "../utils/tematicas";
 import { SlEnergy } from "react-icons/sl";
 import { GiMinerals } from "react-icons/gi";
 import { GiMiner } from "react-icons/gi";
-
+fetch(`${import.meta.env.VITE_API_URL}/galaxias`)
 const RECURSOS = {
     bajo: { minerales: 100, energia: 50, cristales: 20 },
     normal: { minerales: 300, energia: 150, cristales: 50 },

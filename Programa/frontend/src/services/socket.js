@@ -6,8 +6,8 @@ import { io } from "socket.io-client";
 // ======================================================
 
 // Cambia esto según tu entorno (local o ngrok)
-const socket = io("http://localhost:3002", {
-    transports: ["websocket"]
+const socket = io(import.meta.env.VITE_SOCKET_URL, {
+  transports: ["websocket"]
 });
 
 // Si usas ngrok en el futuro:
