@@ -1,10 +1,3 @@
-// ======================================================
-// NOMBRE: ModalDetalles
-// ENTRADA: planeta seleccionado y función para cerrar el modal
-// SALIDA: modal con información detallada del sistema planetario
-// RESTRICCIONES: planeta debe existir para renderizar
-// OBJETIVO: mostrar información completa de un sistema al hacer clic
-// ======================================================
 
 // ==============================================================================================
 // NOMBRE: ModalDetalles
