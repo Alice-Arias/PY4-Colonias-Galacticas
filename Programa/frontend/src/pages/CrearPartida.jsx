@@ -258,7 +258,7 @@ export default function CrearPartida() {
                                         setTiempoMax(e.target.value)
                                     }
                                 />
-                                <small className="form-help-text">
+                                <small style={{ color: "rgba(160, 205, 235, 0.7)", lineHeight: 1.4 }} className="form-help-text">
                                     Este tiempo es el que importa dentro del juego.
                                 </small>
                             </div>
@@ -275,8 +275,8 @@ export default function CrearPartida() {
                                         setTiempoEspera(e.target.value)
                                     }
                                 />
-                                <small className="form-help-text">
-                                    Solo controla cuánto tiempo hay para reunir jugadores.
+                                <small style={{ color: "rgba(160, 205, 235, 0.7)", lineHeight: 1.4 }} className="form-help-text">
+                                    Tiempo sala de espera antes de iniciar la partida.
                                 </small>
                             </div>
                             <div className="crear-form-group">

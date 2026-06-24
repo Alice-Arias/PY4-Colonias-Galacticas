@@ -224,11 +224,11 @@ function Lobby() {
                         <div className="lobby-timer">
                             <div className="lobby-timer-label">Tiempo de espera del lobby</div>
                             <div className="lobby-timer-display">
-                                <span className="lobby-timer-icon">⏱</span>
+                                <span className="lobby-timer-icon">⏱  </span>
                                 <span className="lobby-timer-text">{formatearTiempo(tiempoRestante)}</span>
                             </div>
-                            <small className="lobby-timer-note">
-                                La duración real de la partida se define aparte y empieza cuando se pulsa entrar al juego.
+                            <small style={{ color: "rgba(160, 205, 235, 0.7)", lineHeight: 1.4 }} className="lobby-timer-note">
+                                Tiempo sala de espera antes de iniciar la partida.
                             </small>
                         </div>
                     )}
