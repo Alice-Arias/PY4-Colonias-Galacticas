@@ -1,0 +1,402 @@
+[
+  {
+    "partidaId": "5fog4y",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 1799,
+    "ganador": "Bobby",
+    "tematica": "clasica",
+    "sistemasControlados": 3,
+    "recursosAcumulados": {
+      "minerales": 19769,
+      "energia": 11405,
+      "cristales": 7453
+    },
+    "tiempoFinalizacion": 1781893047281,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. Bobby lidera por puntaje"
+  },
+  {
+    "partidaId": "ypga41",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 179,
+    "ganador": "boba",
+    "tematica": "clasica",
+    "sistemasControlados": 3,
+    "recursosAcumulados": {
+      "minerales": 2001,
+      "energia": 1185,
+      "cristales": 707
+    },
+    "tiempoFinalizacion": 1781892420884,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. boba lidera por puntaje"
+  },
+  {
+    "partidaId": "p7y86d",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 2217,
+    "ganador": "Alicia",
+    "tematica": "clasica",
+    "sistemasControlados": 3,
+    "recursosAcumulados": {
+      "minerales": 10048,
+      "energia": 8640,
+      "cristales": 4906
+    },
+    "tiempoFinalizacion": 1781890586996,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. Alicia lidera por puntaje"
+  },
+  {
+    "partidaId": "x73s31",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 1799,
+    "ganador": "BOBS",
+    "tematica": "clasica",
+    "sistemasControlados": 2,
+    "recursosAcumulados": {
+      "minerales": 11047,
+      "energia": 8845,
+      "cristales": 6639
+    },
+    "tiempoFinalizacion": 1781889369868,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. BOBS lidera por puntaje"
+  },
+  {
+    "partidaId": "bljhbr",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 1799,
+    "ganador": "Alicia",
+    "tematica": "clasica",
+    "sistemasControlados": 2,
+    "recursosAcumulados": {
+      "minerales": 11276,
+      "energia": 8910,
+      "cristales": 6642
+    },
+    "tiempoFinalizacion": 1781889095517,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. Alicia lidera por puntaje"
+  },
+  {
+    "partidaId": "tj7p3d",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 21,
+    "ganador": "Alicia",
+    "tematica": "clasica",
+    "sistemasControlados": 1,
+    "recursosAcumulados": {
+      "minerales": 200,
+      "energia": 150,
+      "cristales": 50
+    },
+    "tiempoFinalizacion": 1781887218918,
+    "motivo": "ultimo_jugador",
+    "motivoTexto": "Alicia es el último jugador en pie"
+  },
+  {
+    "partidaId": "ozadhn",
+    "galaxia": "Templo de Sirius",
+    "tiempoJuego": 299,
+    "ganador": "Julian",
+    "tematica": "clasica",
+    "sistemasControlados": 3,
+    "recursosAcumulados": {
+      "minerales": 3196,
+      "energia": 1900,
+      "cristales": 832
+    },
+    "tiempoFinalizacion": 1781841197147,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. Julian lidera por puntaje"
+  },
+  {
+    "partidaId": "rgcpir",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 299,
+    "ganador": "Alice",
+    "tematica": "clasica",
+    "sistemasControlados": 1,
+    "recursosAcumulados": {
+      "minerales": 1560,
+      "energia": 1060,
+      "cristales": 610
+    },
+    "tiempoFinalizacion": 1781839999357,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. Alice lidera por puntaje"
+  },
+  {
+    "partidaId": "m8nhhj",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 299,
+    "ganador": "Juan",
+    "tematica": "clasica",
+    "sistemasControlados": 2,
+    "recursosAcumulados": {
+      "minerales": 2098,
+      "energia": 1690,
+      "cristales": 736
+    },
+    "tiempoFinalizacion": 1781838169150,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. Juan lidera por puntaje"
+  },
+  {
+    "partidaId": "afnjms",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 299,
+    "ganador": "Alice",
+    "tematica": "clasica",
+    "sistemasControlados": 2,
+    "recursosAcumulados": {
+      "minerales": 1897,
+      "energia": 1445,
+      "cristales": 1089
+    },
+    "tiempoFinalizacion": 1781837600724,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. Alice lidera por puntaje"
+  },
+  {
+    "partidaId": "w5orij",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 299,
+    "ganador": "Alice",
+    "tematica": "clasica",
+    "sistemasControlados": 2,
+    "recursosAcumulados": {
+      "minerales": 1907,
+      "energia": 1605,
+      "cristales": 709
+    },
+    "tiempoFinalizacion": 1781836846154,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. Alice lidera por puntaje"
+  },
+  {
+    "partidaId": "2td6mq",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 299,
+    "ganador": "Alice",
+    "tematica": "clasica",
+    "sistemasControlados": 1,
+    "recursosAcumulados": {
+      "minerales": 300,
+      "energia": 150,
+      "cristales": 50
+    },
+    "tiempoFinalizacion": 1781835978964,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. Alice lidera por puntaje"
+  },
+  {
+    "partidaId": "w65gmc",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 299,
+    "ganador": "Lila",
+    "tematica": "clasica",
+    "sistemasControlados": 1,
+    "recursosAcumulados": {
+      "minerales": 1405,
+      "energia": 930,
+      "cristales": 635
+    },
+    "tiempoFinalizacion": 1781834227907,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. Lila lidera por puntaje"
+  },
+  {
+    "partidaId": "8zsz60",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 299,
+    "ganador": "Alice",
+    "tematica": "clasica",
+    "sistemasControlados": 1,
+    "recursosAcumulados": {
+      "minerales": 300,
+      "energia": 150,
+      "cristales": 50
+    },
+    "tiempoFinalizacion": 1781832472529,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. Alice lidera por puntaje"
+  },
+  {
+    "partidaId": "g3zyqa",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 299,
+    "ganador": "Alice",
+    "tematica": "clasica",
+    "sistemasControlados": 2,
+    "recursosAcumulados": {
+      "minerales": 1837,
+      "energia": 1535,
+      "cristales": 779
+    },
+    "tiempoFinalizacion": 1781831124277,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. Alice lidera por puntaje"
+  },
+  {
+    "partidaId": "ll6gdt",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 299,
+    "ganador": "Alie",
+    "tematica": "clasica",
+    "sistemasControlados": 3,
+    "recursosAcumulados": {
+      "minerales": 2877,
+      "energia": 1705,
+      "cristales": 1249
+    },
+    "tiempoFinalizacion": 1781830195519,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. Alie lidera por puntaje"
+  },
+  {
+    "partidaId": "4xqfoq",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 299,
+    "ganador": "Alice",
+    "tematica": "clasica",
+    "sistemasControlados": 1,
+    "recursosAcumulados": {
+      "minerales": 1137,
+      "energia": 885,
+      "cristales": 669
+    },
+    "tiempoFinalizacion": 1781829728561,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. Alice lidera por puntaje"
+  },
+  {
+    "partidaId": "kxyay0",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 299,
+    "ganador": "Alice",
+    "tematica": "clasica",
+    "sistemasControlados": 3,
+    "recursosAcumulados": {
+      "minerales": 3969,
+      "energia": 1735,
+      "cristales": 933
+    },
+    "tiempoFinalizacion": 1781829140439,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. Alice lidera por puntaje"
+  },
+  {
+    "partidaId": "0tgq0o",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 299,
+    "ganador": "SSSLA",
+    "tematica": "clasica",
+    "sistemasControlados": 1,
+    "recursosAcumulados": {
+      "minerales": 2200,
+      "energia": 920,
+      "cristales": 330
+    },
+    "tiempoFinalizacion": 1781828633267,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. SSSLA lidera por puntaje"
+  },
+  {
+    "partidaId": "tjgf5j",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 299,
+    "ganador": "HostA",
+    "tematica": "clasica",
+    "sistemasControlados": 1,
+    "recursosAcumulados": {
+      "minerales": 1000,
+      "energia": 500,
+      "cristales": 190
+    },
+    "tiempoFinalizacion": 1781826090390,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. HostA lidera por puntaje"
+  },
+  {
+    "partidaId": "n2nbem",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 299,
+    "ganador": "Alice",
+    "tematica": "clasica",
+    "sistemasControlados": 1,
+    "recursosAcumulados": {
+      "minerales": 300,
+      "energia": 150,
+      "cristales": 50
+    },
+    "tiempoFinalizacion": 1781825035954,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. Alice lidera por puntaje"
+  },
+  {
+    "partidaId": "1qkni5",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 299,
+    "ganador": "Jugador1",
+    "tematica": "clasica",
+    "sistemasControlados": 1,
+    "recursosAcumulados": {
+      "minerales": 300,
+      "energia": 150,
+      "cristales": 50
+    },
+    "tiempoFinalizacion": 1781824585425,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. Jugador1 lidera por puntaje"
+  },
+  {
+    "partidaId": "i1plnd",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 299,
+    "ganador": "Alice",
+    "tematica": "clasica",
+    "sistemasControlados": 1,
+    "recursosAcumulados": {
+      "minerales": 300,
+      "energia": 150,
+      "cristales": 50
+    },
+    "tiempoFinalizacion": 1781823851114,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. Alice lidera por puntaje"
+  },
+  {
+    "partidaId": "zu945s",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 299,
+    "ganador": "Alonso",
+    "tematica": "clasica",
+    "sistemasControlados": 1,
+    "recursosAcumulados": {
+      "minerales": 900,
+      "energia": 500,
+      "cristales": 190
+    },
+    "tiempoFinalizacion": 1781821870029,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. Alonso lidera por puntaje"
+  },
+  {
+    "partidaId": "n7m997",
+    "galaxia": "Nebulosa Orion",
+    "tiempoJuego": 299,
+    "ganador": "Alice",
+    "tematica": "clasica",
+    "sistemasControlados": 1,
+    "recursosAcumulados": {
+      "minerales": 1000,
+      "energia": 500,
+      "cristales": 190
+    },
+    "tiempoFinalizacion": 1781821323210,
+    "motivo": "tiempo",
+    "motivoTexto": "Tiempo agotado. Alice lidera por puntaje"
+  }
+]
