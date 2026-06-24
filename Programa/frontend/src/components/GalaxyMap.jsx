@@ -183,7 +183,7 @@ export default function GalaxyMap({ sistemas = [], onPlanetSelect, selectedId = 
       });
     });
 
-    // Primera pasada: halo suave para que el camino se perciba sobre el fondo.
+  
     ctx.strokeStyle = "rgba(108, 185, 255, 0.26)";
     ctx.lineWidth = 5;
     ctx.lineCap = "round";
