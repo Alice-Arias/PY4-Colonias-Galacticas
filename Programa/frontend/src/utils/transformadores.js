@@ -1,17 +1,4 @@
-// ======================================================
-// NOMBRE: transformadores
-// ENTRADA: estado del servidor, datos de jugador y sistema
-// SALIDA: estructuras para el frontend
-// OBJETIVO: centralizar transformaciones de datos entre servidor y UI
-// ======================================================
 
-// ======================================================
-// NOMBRE: formatearTiempo
-// ENTRADA: segundos como número
-// SALIDA: string en formato "mm:ss"
-// RESTRICCIONES: segundos debe ser un número positivo
-// OBJETIVO: convertir segundos a formato legible para el temporizador
-// ======================================================
 // ==============================================================================================
 // NOMBRE: formatearTiempo
 // ENTRADA: segundos numéricos
@@ -25,14 +12,6 @@ export function formatearTiempo(segundos) {
     const seg = total % 60;
     return `${min}:${String(seg).padStart(2, "0")}`;
 }
-
-// ======================================================
-// NOMBRE: transformarEstadoServidor
-// ENTRADA: estado completo del servidor con galaxia y sistemas
-// SALIDA: arreglo de sistemas con conexiones y datos listos para el mapa
-// RESTRICCIONES: estado debe contener galaxia con sistemas y rutas
-// OBJETIVO: adaptar el estado del servidor al formato que necesita GalaxyMap
-// ======================================================
 // ==============================================================================================
 // NOMBRE: transformarEstadoServidor
 // ENTRADA: estado recibido desde backend
@@ -64,13 +43,6 @@ export function transformarEstadoServidor(estado) {
     }));
 }
 
-// ======================================================
-// NOMBRE: getPlayerState
-// ENTRADA: estado del servidor, nombre del jugador y socketId
-// SALIDA: objeto con estado del jugador o null si no se encuentra
-// RESTRICCIONES: busca primero por socketId, luego por nickname
-// OBJETIVO: obtener el estado del jugador actual de forma segura
-// ======================================================
 // ==============================================================================================
 // NOMBRE: getPlayerState
 // ENTRADA: estado global, playerName y playerSocketId
@@ -90,13 +62,6 @@ export function getPlayerState(estado, playerName, playerSocketId) {
     return jugador || null;
 }
 
-// ======================================================
-// NOMBRE: inferSelectedDetails
-// ENTRADA: sistema seleccionado y estado del jugador actual
-// SALIDA: objeto con detalles del sistema listos para PlanetPanel
-// RESTRICCIONES: sistema debe existir
-// OBJETIVO: preparar la información del sistema para mostrar en el panel lateral
-// ======================================================
 // ==============================================================================================
 // NOMBRE: inferSelectedDetails
 // ENTRADA: sistema seleccionado y estado del jugador
