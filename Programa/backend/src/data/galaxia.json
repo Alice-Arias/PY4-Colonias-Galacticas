@@ -362,7 +362,7 @@
       ]
     },
     {
-      "nombre": "Matriz Centauri",
+      "nombre": "Imperio Estelar2",
       "sistemas": [
         { "id": "S1", "nombre": "Terra", "tipo": "balanceado" },
         { "id": "S2", "nombre": "Nova", "tipo": "minero" },
